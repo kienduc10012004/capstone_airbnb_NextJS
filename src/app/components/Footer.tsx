@@ -74,7 +74,7 @@ const Footer = () => (
       </div>
 
       <div className="mt-10 border-t border-gray-200 pt-6 text-center text-sm text-gray-600 sm:mt-12">
-        <p>© 2026 Airbnb Capstone. Huỳnh Gia Huy - Lê Đức Kiên</p>
+        <p>© 2026 Airbnb Capstone.</p>
       </div>
     </div>
   </footer>
