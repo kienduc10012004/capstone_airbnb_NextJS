@@ -37,9 +37,13 @@ export default function RootLayout({
       lang="vi"
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full scroll-smooth antialiased`}
-      suppressHydrationWarning
     >
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `!function(){try{var d=document.documentElement,c=d.classList;c.remove('light','dark');var e=localStorage.getItem('theme');if(e){c.add(e)}else{var p=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';c.add(p);e=p;}d.setAttribute('data-theme',e);d.style.colorScheme=e;}catch(t){}}();`,
+          }}
+        />
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css"

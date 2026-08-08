@@ -37,26 +37,26 @@ const RoomCard = ({ location, query, rating = null, room }: RoomCardProps) => {
         </div>
         <div className="mt-3">
           <div className="flex items-start justify-between gap-3">
-            <h3 className="truncate font-semibold text-gray-900 transition-colors duration-300 ease-out group-hover:text-rose-600">
+            <h3 className="truncate font-semibold text-gray-900 dark:text-gray-100 transition-colors duration-300 ease-out group-hover:text-rose-600 dark:group-hover:text-rose-400">
               {room.tenPhong}
             </h3>
             {rating && (
-              <span className="shrink-0 text-sm text-gray-700">
+              <span className="shrink-0 text-sm text-gray-700 dark:text-gray-300">
                 ★ {rating.toFixed(1)}
               </span>
             )}
           </div>
-          <p className="mt-1 truncate text-sm text-gray-500">
+          <p className="mt-1 truncate text-sm text-gray-500 dark:text-slate-400">
             {location
               ? `${location.tenViTri}, ${location.tinhThanh}`
               : "Vị trí đang cập nhật"}
           </p>
-          <p className="mt-1 text-sm text-gray-500">
+          <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
             {room.khach} khách · {room.phongNgu} phòng ngủ · {room.giuong}{" "}
             giường
           </p>
-          <p className="mt-2 text-sm text-gray-700">
-            <span className="text-base font-semibold text-gray-900">
+          <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            <span className="text-base font-semibold text-gray-900 dark:text-white">
               ${room.giaTien}
             </span>{" "}
             / đêm

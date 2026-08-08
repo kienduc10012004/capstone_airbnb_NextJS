@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import Footer from "@/app/components/Footer";
@@ -21,9 +20,7 @@ import { useAuthStore } from "@/app/store/useAuthStore";
 import { useFavoritesStore } from "@/app/store/useFavoritesStore";
 
 const FavoritesPageContent = () => {
-  const router = useRouter();
   const authHydrated = useAuthStore((state) => state.hydrated);
-  const user = useAuthStore((state) => state.user);
   const favoritesHydrated = useFavoritesStore((state) => state.hydrated);
   const favoriteRoomIds = useFavoritesStore((state) => state.roomIds);
   const [rooms, setRooms] = useState<ApiRoom[]>([]);
@@ -32,11 +29,7 @@ const FavoritesPageContent = () => {
   const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    if (authHydrated && !user) router.replace("/");
-  }, [authHydrated, router, user]);
-
-  useEffect(() => {
-    if (!authHydrated || !favoritesHydrated || !user) return;
+    if (!authHydrated || !favoritesHydrated) return;
 
     let active = true;
 
@@ -56,7 +49,7 @@ const FavoritesPageContent = () => {
     return () => {
       active = false;
     };
-  }, [authHydrated, favoritesHydrated, user]);
+  }, [authHydrated, favoritesHydrated]);
 
   const favoriteRooms = useMemo(() => {
     const roomMap = new Map(rooms.map((room) => [room.id, room]));
@@ -69,7 +62,7 @@ const FavoritesPageContent = () => {
     [locations],
   );
 
-  if (!authHydrated || !favoritesHydrated || !user) {
+  if (!authHydrated || !favoritesHydrated) {
     return <LoadingState label="Đang tải phòng yêu thích..." />;
   }
 

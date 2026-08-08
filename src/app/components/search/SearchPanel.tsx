@@ -34,12 +34,6 @@ const EMPTY_GUESTS: GuestSelection = {
   pets: 0,
 };
 
-const ACTIVE_INDICATOR_POSITIONS = {
-  location: "left-1 w-[calc(40.3%-4px)]",
-  dates: "left-[40.3%] w-[29.85%]",
-  guests: "left-[70.15%] w-[calc(29.85%-4px)]",
-} satisfies Record<Exclude<SearchSection, null>, string>;
-
 const SearchPanel = ({
   compact = false,
   initialDates = EMPTY_DATES,
@@ -100,9 +94,6 @@ const SearchPanel = ({
     (location) => location.id === locationId,
   );
   const totalGuests = guests.adults + guests.children;
-  const activeIndicatorPosition = activeSection
-    ? ACTIVE_INDICATOR_POSITIONS[activeSection]
-    : ACTIVE_INDICATOR_POSITIONS.location;
 
   //==== Thực thi tìm kiếm: kiểm tra ngày và chuyển bộ lọc hợp lệ sang trang danh sách phòng ====
   const closeMobileSearch = () => {
@@ -157,24 +148,20 @@ const SearchPanel = ({
   return (
     <>
       <div
-        className={`hidden md:block ${
+        className={`hidden md:block [&_.search-segment>span:first-child]:dark:text-slate-300 [&_.search-segment>span:last-child]:dark:text-slate-400 ${
           compact
             ? "[&_.search-segment]:px-4 [&_.search-segment]:py-2 [&_.search-segment>span:first-child]:text-[11px] [&_.search-segment>span:last-child]:text-xs"
-            : ""
+            : "[&_.search-segment]:px-6 [&_.search-segment]:py-3.5 [&_.search-segment>span:first-child]:text-xs [&_.search-segment>span:first-child]:font-bold [&_.search-segment>span:first-child]:text-gray-900 [&_.search-segment>span:last-child]:text-sm [&_.search-segment>span:last-child]:font-medium"
         }`}
         ref={desktopRef}
       >
         <div
-          className={`relative flex items-center rounded-full border border-gray-200 bg-gray-100 p-1 transition-colors duration-300 hover:bg-gray-300 ${
-            compact ? "min-h-14 shadow-lg" : "min-h-17 shadow-xl"
+          className={`relative flex items-center rounded-full border-2 border-rose-200/80 bg-white p-2 backdrop-blur-xl transition-all duration-300 hover:border-rose-400 dark:border-transparent dark:bg-[#1e2d45] dark:hover:border-rose-500/50 ${
+            compact
+              ? "min-h-[68px] shadow-lg shadow-rose-950/8 dark:shadow-black/20"
+              : "min-h-20 shadow-[0_20px_50px_rgba(244,63,94,0.18)] ring-4 ring-rose-500/10 hover:shadow-[0_25px_60px_rgba(244,63,94,0.25)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.4)] dark:ring-white/5"
           }`}
         >
-          <span
-            aria-hidden="true"
-            className={`pointer-events-none absolute top-1 bottom-1 z-0 rounded-full bg-white shadow-lg transition-[left,width,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${activeIndicatorPosition} ${
-              activeSection ? "opacity-100" : "opacity-0"
-            }`}
-          />
           <LocationSelector
             active={activeSection === "location"}
             loading={locationsLoading}
@@ -184,7 +171,7 @@ const SearchPanel = ({
             onActivate={() => setActiveSection("location")}
             onSelect={selectLocation}
           />
-          <span aria-hidden="true" className="h-8 w-px shrink-0 bg-gray-300" />
+          <span aria-hidden="true" className="h-10 w-px shrink-0 bg-gray-200 dark:bg-white/10" />
           <DateSelector
             active={activeSection === "dates"}
             value={dates}
@@ -193,7 +180,7 @@ const SearchPanel = ({
             onChange={changeDates}
             onComplete={() => setActiveSection("guests")}
           />
-          <span aria-hidden="true" className="h-8 w-px shrink-0 bg-gray-300" />
+          <span aria-hidden="true" className="h-10 w-px shrink-0 bg-gray-200 dark:bg-white/10" />
           <GuestSelector
             active={activeSection === "guests"}
             value={guests}
@@ -203,13 +190,16 @@ const SearchPanel = ({
           />
           <button
             aria-label="Tìm kiếm"
-            className={`absolute right-2 grid place-items-center rounded-full bg-gradient-to-br from-rose-500 to-pink-600 text-white shadow-md hover:scale-105 hover:from-rose-600 hover:to-pink-700 ${
-              compact ? "h-10 w-10 text-lg" : "h-12 w-12 text-xl"
+            className={`group relative z-10 flex cursor-pointer items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-rose-500 via-pink-500 to-rose-600 font-extrabold text-white shadow-xl shadow-rose-500/35 transition-all duration-300 hover:scale-[1.04] hover:shadow-2xl hover:shadow-rose-500/45 active:scale-95 ${
+              compact
+                ? "h-11 px-5 text-sm"
+                : "h-14 px-8 text-base tracking-wide"
             }`}
             type="button"
             onClick={submitSearch}
           >
-            ⌕
+            <i className="fa-solid fa-magnifying-glass text-base transition-transform group-hover:scale-110" />
+            <span>Tìm kiếm</span>
           </button>
         </div>
         {dateError && (

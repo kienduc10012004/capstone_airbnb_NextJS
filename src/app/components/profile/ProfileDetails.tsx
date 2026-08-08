@@ -148,10 +148,10 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
 
   //==== Giao diện hồ sơ: hiển thị avatar, thông tin cá nhân và trạng thái biểu mẫu ====
   return (
-    <section className={`${uiClassNames.surface} overflow-hidden`}>
-      <div className="border-b border-gray-200 bg-gradient-to-r from-rose-50 to-pink-50 p-6 sm:p-8">
+    <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white/95 shadow-[0_10px_35px_rgb(15_23_42/0.06)] dark:border-white/10 dark:bg-[#1a2236] dark:shadow-[0_10px_40px_rgb(0_0_0/0.4)]">
+      <div className="border-b border-gray-200/70 bg-gradient-to-r from-rose-50 to-pink-50 p-6 dark:border-white/10 dark:from-[#1e293b] dark:to-[#1a2236] sm:p-8">
         <div className="flex flex-col items-center gap-5 sm:flex-row">
-          <div className="relative h-24 w-24 overflow-hidden rounded-full bg-gray-900 text-white ring-4 ring-white">
+          <div className="relative h-24 w-24 overflow-hidden rounded-full bg-gray-900 text-white ring-4 ring-white dark:ring-white/20">
             {avatarSource ? (
               <Image
                 fill
@@ -161,14 +161,14 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
                 src={avatarSource}
               />
             ) : (
-              <div className="grid h-full place-items-center text-3xl font-semibold">
+              <div className="grid h-full place-items-center bg-gradient-to-br from-rose-500 to-pink-600 text-3xl font-semibold text-white">
                 {user.name.charAt(0).toUpperCase()}
               </div>
             )}
           </div>
           <div className="text-center sm:text-left">
-            <h2 className="text-xl font-semibold">{user.name}</h2>
-            <p className="mt-1 text-sm text-gray-500">{user.email}</p>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{user.name}</h2>
+            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{user.email}</p>
             <input
               ref={fileInputRef}
               accept="image/*"
@@ -184,77 +184,95 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
             >
               Đổi ảnh đại diện
             </Button>
-            <p className="mt-2 text-xs text-gray-500">
+            <p className="mt-2 text-xs text-gray-500 dark:text-slate-500">
               Chọn hình JPG hoặc PNG có dung lượng dưới 1MB.
             </p>
+          </div>
+
+          <div className="mt-4 rounded-2xl border border-emerald-200/80 bg-white/80 p-4 shadow-sm sm:mt-0 sm:ml-auto sm:max-w-xs dark:border-emerald-500/20 dark:bg-emerald-950/20">
+            <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+              <i className="fa-solid fa-shield-check text-base" />
+              <span>Xác minh danh tính</span>
+            </div>
+            <p className="mt-1 text-xs text-gray-600 dark:text-slate-400">
+              Xác minh danh tính của bạn để nhận huy hiệu tin cậy trên Airbnb.
+            </p>
+            <button
+              className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100 dark:border-emerald-500/30 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
+              type="button"
+              onClick={() => showToast("Tài khoản của bạn đã được xác minh danh tính thành công!", "success")}
+            >
+              <i className="fa-solid fa-circle-check text-xs" />
+              <span>Nhận huy hiệu</span>
+            </button>
           </div>
         </div>
       </div>
 
-      <form className="space-y-5 p-6 sm:p-8" onSubmit={handleSubmit(submit)}>
+      <form className="space-y-5 bg-white p-6 dark:bg-[#1a2236] sm:p-8" onSubmit={handleSubmit(submit)}>
         {message && (
           <StatusMessage message={message.text} type={message.type} />
         )}
         <div className="grid gap-5 sm:grid-cols-2">
-          <label className="text-sm font-medium">
+          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Họ và tên
             <input
-              className={`${uiClassNames.field} mt-1.5`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60`}
               {...register("name")}
             />
             {errors.name && (
-              <span className="text-xs text-red-500">
+              <span className="text-xs text-red-500 dark:text-red-400">
                 {errors.name.message}
               </span>
             )}
           </label>
-          <label className="text-sm font-medium">
+          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Email
             <input
-              className={`${uiClassNames.field} mt-1.5`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60`}
               type="email"
               {...register("email")}
             />
             {errors.email && (
-              <span className="text-xs text-red-500">
+              <span className="text-xs text-red-500 dark:text-red-400">
                 {errors.email.message}
               </span>
             )}
           </label>
-          <label className="text-sm font-medium">
+          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Số điện thoại
             <input
-              className={`${uiClassNames.field} mt-1.5`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60`}
               {...register("phone")}
             />
             {errors.phone && (
-              <span className="text-xs text-red-500">
+              <span className="text-xs text-red-500 dark:text-red-400">
                 {errors.phone.message}
               </span>
             )}
           </label>
-          <label className="text-sm font-medium">
+          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Ngày sinh
             <input
-              className={`${uiClassNames.field} mt-1.5`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:focus:border-rose-500/60`}
               type="date"
               {...register("birthday")}
             />
           </label>
-          <label className="text-sm font-medium">
+          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Giới tính
             <select
-              className={`${uiClassNames.field} mt-1.5`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:focus:border-rose-500/60`}
               {...register("gender")}
             >
               <option value="true">Nam</option>
               <option value="false">Nữ</option>
             </select>
           </label>
-          <label className="text-sm font-medium">
+          <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Vai trò
             <input
-              className={`${uiClassNames.field} mt-1.5`}
+              className={`${uiClassNames.field} mt-1.5 cursor-not-allowed opacity-60 dark:border-white/10 dark:bg-[#0f172a] dark:text-slate-400`}
               disabled
               value={user.role}
               readOnly
@@ -262,7 +280,7 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
             <input type="hidden" {...register("role")} />
           </label>
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-end border-t border-gray-100 pt-4 dark:border-white/10">
           <Button loading={isSubmitting} type="submit" variant="edit">
             Lưu thay đổi
           </Button>

@@ -9,6 +9,7 @@ import MobileHeaderMenu from "@/app/components/header/MobileHeaderMenu";
 import UserMenuAvatar from "@/app/components/auth/UserMenuAvatar";
 import SearchPanel from "@/app/components/search/SearchPanel";
 import ConfirmDialog from "@/app/components/ui/ConfirmDialog";
+import ThemeToggle from "@/app/components/ui/ThemeToggle";
 import type { ApiUser } from "@/app/lib/api";
 import {
   OPEN_SIGN_IN_EVENT,
@@ -18,11 +19,14 @@ import { HOME_SEARCH_COMPACT_EVENT } from "@/app/lib/home-search";
 import { clearSession } from "@/app/lib/session";
 import { uiClassNames } from "@/app/lib/styles";
 import { useAuthStore } from "@/app/store/useAuthStore";
+import { useToastStore } from "@/app/store/useToastStore";
 
 const navigationItems = [
   { href: "/", icon: "fa-regular fa-compass", label: "Khám phá" },
   { href: "/rooms", icon: "fa-solid fa-bed", label: "Phòng ở" },
   { href: "/locations", icon: "fa-solid fa-location-dot", label: "Điểm đến" },
+  { href: "/favorites", icon: "fa-solid fa-heart", label: "Yêu thích" },
+  { href: "/profile", icon: "fa-solid fa-user", label: "Hồ sơ" },
 ] as const;
 
 const isNavigationItemActive = (pathname: string, href: string) =>
@@ -155,10 +159,13 @@ const Header = () => {
     return () => window.removeEventListener(OPEN_SIGN_IN_EVENT, openSignIn);
   }, []);
 
+  const showToast = useToastStore((state) => state.showToast);
+
   //==== Xác thực người dùng: cập nhật phiên đăng nhập và xử lý đăng xuất có xác nhận ====
   const handleSignedIn = (signedInUser: ApiUser) => {
     setUser(signedInUser);
     setAuthOpen(false);
+    showToast(`Đăng nhập thành công. Chào mừng ${signedInUser.name}!`, "success");
     if (signedInUser.role === "ADMIN") {
       router.push("/admin");
     } else {
@@ -173,6 +180,7 @@ const Header = () => {
     setMobileMenuOpen(false);
     setMobileAccountMenuOpen(false);
     setLogoutConfirmOpen(false);
+    showToast("Đã đăng xuất khỏi tài khoản.", "success");
     router.push("/");
     router.refresh();
   };
@@ -225,15 +233,15 @@ const Header = () => {
               <span className="hidden sm:inline">airbnb</span>
             </Link>
 
-            <nav className="hidden items-center rounded-full bg-gray-50 p-1 text-sm font-medium lg:flex">
+            <nav className="hidden items-center rounded-full bg-gray-50 p-1 text-sm font-medium dark:bg-slate-800/60 lg:flex">
               {navigationItems.map((item) => {
                 const active = isNavigationItemActive(pathname, item.href);
                 return (
                   <Link
-                    className={`rounded-full px-3 py-2 lg:px-4 ${
+                    className={`rounded-full px-3 py-2 lg:px-4 transition-colors ${
                       active
-                        ? "bg-white text-rose-600 shadow-sm"
-                        : "text-gray-700 hover:bg-white hover:text-rose-600"
+                        ? "bg-white text-rose-600 shadow-sm dark:bg-slate-700 dark:text-rose-400"
+                        : "text-gray-700 dark:text-slate-300 hover:bg-white hover:text-rose-600 dark:hover:bg-slate-700 dark:hover:text-rose-400"
                     }`}
                     href={item.href}
                     key={item.href}
@@ -244,125 +252,133 @@ const Header = () => {
               })}
             </nav>
 
-            <div className="relative hidden shrink-0 lg:block" ref={menuRef}>
-              <button
-                aria-expanded={desktopMenuOpen}
-                aria-label="Mở menu tài khoản"
-                className={`group flex items-center gap-2 rounded-full border bg-white py-1.5 pr-1.5 pl-3 text-gray-950 shadow-sm hover:border-rose-300 hover:text-rose-600 hover:shadow-md ${
-                  desktopMenuOpen
-                    ? "border-rose-300 text-rose-600"
-                    : "border-gray-300"
-                }`}
-                type="button"
-                onClick={() => {
-                  setDesktopMenuOpen((current) => !current);
-                }}
-              >
-                <span className="text-lg leading-none">☰</span>
-                {hydrated && user && (
-                  <span
-                    className="hidden max-w-28 truncate text-sm font-medium lg:block xl:max-w-44"
-                    title={`Xin chào ${user.name}`}
+            <div className="flex items-center gap-2.5">
+              <ThemeToggle />
+              {hydrated && !user ? (
+                <div className="hidden items-center gap-2.5 lg:flex">
+                  <button
+                    className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-800 shadow-xs transition-colors hover:border-rose-300 hover:text-rose-600 dark:border-white/20 dark:bg-gray-800 dark:text-gray-100"
+                    type="button"
+                    onClick={() => openAuth("SignIn")}
                   >
-                    Xin chào {user.name}
-                  </span>
-                )}
-                {hydrated && user ? (
-                  <UserMenuAvatar
-                    avatar={user.avatar}
-                    key={user.avatar || user.id}
-                    name={user.name}
-                  />
-                ) : (
-                  <span className="grid h-8 w-8 place-items-center rounded-full bg-gray-900 text-sm text-white">
-                    ●
-                  </span>
-                )}
-              </button>
-
-              {desktopMenuOpen && (
-                <div className="absolute top-13 right-0 z-20 w-[min(288px,calc(100vw-32px))] overflow-hidden rounded-2xl border border-gray-200 bg-white py-2 shadow-2xl">
-                  <div className="border-b border-gray-100 px-4 py-3">
-                    <p
-                      className="truncate text-sm font-semibold text-gray-950"
-                      title={user?.name}
-                    >
-                      {user ? user.name : "Xin chào bạn"}
-                    </p>
-                    <p
-                      className="truncate text-xs text-gray-950"
-                      title={user?.email}
-                    >
-                      {user?.email ?? "Đăng nhập để bắt đầu hành trình"}
-                    </p>
-                  </div>
-                  <div className="p-2">
-                    {user ? (
-                      <>
-                        <Link
-                          className={`block rounded-xl px-3 py-2.5 text-sm ${
-                            pathname === "/profile"
-                              ? "bg-rose-50 text-rose-600"
-                              : "text-gray-950 hover:bg-rose-50 hover:text-rose-600"
-                          }`}
-                          href="/profile"
-                          onClick={() => setDesktopMenuOpen(false)}
-                        >
-                          Hồ sơ và chuyến đi
-                        </Link>
-                        <Link
-                          className={`block rounded-xl px-3 py-2.5 text-sm ${
-                            pathname === "/favorites"
-                              ? "bg-rose-50 text-rose-600"
-                              : "text-gray-950 hover:bg-rose-50 hover:text-rose-600"
-                          }`}
-                          href="/favorites"
-                          onClick={() => setDesktopMenuOpen(false)}
-                        >
-                          Phòng yêu thích
-                        </Link>
-                        {user.role === "ADMIN" && (
-                          <Link
-                            className={`block rounded-xl px-3 py-2.5 text-sm font-medium ${
-                              pathname.startsWith("/admin")
-                                ? "bg-rose-50 text-rose-600"
-                                : "text-gray-950 hover:bg-rose-50 hover:text-rose-600"
-                            }`}
-                            href="/admin"
-                            onClick={() => setDesktopMenuOpen(false)}
-                          >
-                            Trang quản trị
-                          </Link>
-                        )}
-                        <button
-                          className="w-full rounded-xl px-3 py-2.5 text-left text-sm text-gray-950 hover:bg-rose-50 hover:text-rose-600"
-                          type="button"
-                          onClick={requestLogout}
-                        >
-                          Đăng xuất
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          className="w-full rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-gray-950 hover:bg-rose-50 hover:text-rose-600"
-                          type="button"
-                          onClick={() => openAuth("SignIn")}
-                        >
-                          Đăng nhập
-                        </button>
-                        <button
-                          className="mt-1 w-full rounded-xl px-3 py-2.5 text-left text-sm text-gray-950 hover:bg-rose-50 hover:text-rose-600"
-                          type="button"
-                          onClick={() => openAuth("SignUp")}
-                        >
-                          Tạo tài khoản
-                        </button>
-                      </>
-                    )}
-                  </div>
+                    Đăng nhập
+                  </button>
+                  <button
+                    className="rounded-full bg-gradient-to-r from-rose-500 to-pink-600 px-4.5 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:opacity-95 hover:shadow-md"
+                    type="button"
+                    onClick={() => openAuth("SignUp")}
+                  >
+                    Tạo tài khoản
+                  </button>
                 </div>
-              )}
+              ) : (
+                <div className="relative hidden shrink-0 lg:block" ref={menuRef}>
+                <button
+                  aria-expanded={desktopMenuOpen}
+                  aria-label="Mở menu tài khoản"
+                  className={`group flex items-center gap-2.5 rounded-full border bg-white py-1.5 pr-1.5 pl-3 text-gray-950 shadow-sm transition-all hover:border-rose-300 hover:text-rose-600 hover:shadow-md ${
+                    desktopMenuOpen
+                      ? "border-rose-300 text-rose-600"
+                      : "border-gray-300"
+                  }`}
+                  type="button"
+                  onClick={() => {
+                    setDesktopMenuOpen((current) => !current);
+                  }}
+                >
+                  <span className="text-lg leading-none">☰</span>
+                  {hydrated && user && (
+                    <span
+                      className="hidden max-w-28 truncate text-sm font-semibold text-gray-800 lg:block xl:max-w-44"
+                      title={`Xin chào ${user.name}`}
+                    >
+                      {user.name}
+                    </span>
+                  )}
+                  {hydrated && user && (
+                    <UserMenuAvatar
+                      avatar={user.avatar}
+                      key={user.avatar || user.id}
+                      name={user.name}
+                    />
+                  )}
+                </button>
+
+                {desktopMenuOpen && user && (
+                  <div className="absolute top-13 right-0 z-20 w-[min(288px,calc(100vw-32px))] overflow-hidden rounded-2xl border border-gray-200 bg-white py-2 shadow-2xl">
+                    <div className="border-b border-gray-100 px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <UserMenuAvatar
+                          avatar={user.avatar}
+                          key={user.avatar || user.id}
+                          name={user.name}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p
+                            className="truncate text-sm font-bold text-gray-950"
+                            title={user.name}
+                          >
+                            {user.name}
+                          </p>
+                          <p
+                            className="truncate text-xs text-gray-500"
+                            title={user.email}
+                          >
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <Link
+                        className={`block rounded-xl px-3 py-2.5 text-sm font-medium ${
+                          pathname === "/profile"
+                            ? "bg-rose-50 text-rose-600"
+                            : "text-gray-950 hover:bg-rose-50 hover:text-rose-600"
+                        }`}
+                        href="/profile"
+                        onClick={() => setDesktopMenuOpen(false)}
+                      >
+                        Hồ sơ và chuyến đi
+                      </Link>
+                      <Link
+                        className={`block rounded-xl px-3 py-2.5 text-sm font-medium ${
+                          pathname === "/favorites"
+                            ? "bg-rose-50 text-rose-600"
+                            : "text-gray-950 hover:bg-rose-50 hover:text-rose-600"
+                        }`}
+                        href="/favorites"
+                        onClick={() => setDesktopMenuOpen(false)}
+                      >
+                        Phòng yêu thích
+                      </Link>
+                      {user.role === "ADMIN" && (
+                        <Link
+                          className={`block rounded-xl px-3 py-2.5 text-sm font-semibold ${
+                            pathname.startsWith("/admin")
+                              ? "bg-rose-50 text-rose-600"
+                              : "text-gray-950 hover:bg-rose-50 hover:text-rose-600"
+                          }`}
+                          href="/admin"
+                          onClick={() => setDesktopMenuOpen(false)}
+                        >
+                          Trang quản trị
+                        </Link>
+                      )}
+                      <div className="my-1 border-t border-gray-100" />
+                      <button
+                        className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+                        type="button"
+                        onClick={requestLogout}
+                      >
+                        <span>Đăng xuất</span>
+                        <i className="fa-solid fa-right-from-bracket" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             </div>
 
             <button
@@ -387,7 +403,7 @@ const Header = () => {
 
           {compactSearchVisible && (
             <div
-              className="mx-auto hidden max-w-[760px] pt-2 pb-3 transition-[opacity,translate,scale] duration-300 ease-out starting:-translate-y-2 starting:scale-[0.98] starting:opacity-0 lg:block"
+              className="mx-auto hidden max-w-4xl pt-2 pb-3 transition-[opacity,translate,scale] duration-300 ease-out starting:-translate-y-2 starting:scale-[0.98] starting:opacity-0 lg:block"
               data-compact-search-trigger="true"
             >
               <SearchPanel compact />

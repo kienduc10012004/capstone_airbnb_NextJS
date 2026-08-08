@@ -161,7 +161,7 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
     <section className="mt-10">
       <div>
         <p className="text-sm font-semibold text-rose-500">Hành trình</p>
-        <h2 className="mt-1 text-2xl font-semibold">Chuyến đi của bạn</h2>
+        <h2 className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">Chuyến đi của bạn</h2>
       </div>
       {message && (
         <div className="mt-5">
@@ -194,7 +194,7 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
             const imageSource = getImageSource(room?.hinhAnh);
             return (
               <article
-                className={`${uiClassNames.surface} overflow-hidden`}
+                className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_4px_20px_rgb(15_23_42/0.05)] transition-shadow hover:shadow-[0_8px_30px_rgb(15_23_42/0.1)] dark:border-white/10 dark:bg-[#1a2236] dark:shadow-[0_4px_20px_rgb(0_0_0/0.3)]"
                 key={booking.id}
               >
                 <div className="relative h-44 bg-gray-100">
@@ -213,35 +213,51 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
                   )}
                 </div>
                 <div className="p-5">
-                  <h3 className="font-semibold">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                     {room?.tenPhong || `Phòng #${booking.maPhong}`}
                   </h3>
-                  <p className="mt-2 text-sm text-gray-500">
-                    {new Date(booking.ngayDen).toLocaleDateString("vi-VN")} –{" "}
-                    {new Date(booking.ngayDi).toLocaleDateString("vi-VN")}
+                  {room && (
+                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                      {room.khach} khách · {room.phongNgu} phòng ngủ · {room.giuong} giường · {room.phongTam} phòng tắm
+                    </p>
+                  )}
+                  <p className="mt-2 text-sm font-medium text-rose-600 dark:text-rose-400">
+                    📅 {new Date(booking.ngayDen).toLocaleDateString("vi-VN")} –{" "}
+                    {new Date(booking.ngayDi).toLocaleDateString("vi-VN")} ({booking.soLuongKhach} khách)
                   </p>
-                  <p className="mt-1 text-sm text-gray-500">
-                    {booking.soLuongKhach} khách
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    <Button
-                      variant="edit"
-                      onClick={() => startEditing(booking.id)}
-                    >
-                      Đổi lịch
-                    </Button>
-                    <Button
-                      variant="delete"
-                      onClick={() => setDeletingBookingId(booking.id)}
-                    >
-                      Hủy chuyến
-                    </Button>
-                    <Link
-                      className="ml-auto self-center text-sm font-semibold text-rose-600"
-                      href={`/rooms/${booking.maPhong}`}
-                    >
-                      Xem phòng
-                    </Link>
+                  {room && (
+                    <div className="mt-2 flex flex-wrap gap-1 text-[11px] text-gray-500 dark:text-slate-400">
+                      {room.wifi && <span className="rounded-md bg-gray-100 px-2 py-0.5 dark:bg-slate-800/60 dark:text-slate-300">Wifi</span>}
+                      {room.mayGiat && <span className="rounded-md bg-gray-100 px-2 py-0.5 dark:bg-slate-800/60 dark:text-slate-300">Máy giặt</span>}
+                      {room.tivi && <span className="rounded-md bg-gray-100 px-2 py-0.5 dark:bg-slate-800/60 dark:text-slate-300">Tivi</span>}
+                      {room.doXe && <span className="rounded-md bg-gray-100 px-2 py-0.5 dark:bg-slate-800/60 dark:text-slate-300">Đỗ xe</span>}
+                      {room.hoBoi && <span className="rounded-md bg-gray-100 px-2 py-0.5 dark:bg-slate-800/60 dark:text-slate-300">Hồ bơi</span>}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 dark:border-white/10">
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">
+                      ${room?.giaTien || 0} <span className="text-xs font-normal text-gray-500 dark:text-slate-400">/ đêm</span>
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="edit"
+                        onClick={() => startEditing(booking.id)}
+                      >
+                        Đổi lịch
+                      </Button>
+                      <Button
+                        variant="delete"
+                        onClick={() => setDeletingBookingId(booking.id)}
+                      >
+                        Hủy chuyến
+                      </Button>
+                      <Link
+                        className="text-xs font-semibold text-rose-600 hover:underline"
+                        href={`/rooms/${booking.maPhong}`}
+                      >
+                        Xem phòng
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </article>

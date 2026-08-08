@@ -15,5 +15,5 @@ export const uiClassNames = {
   popoverMotion:
     "origin-top transition-[opacity,translate,scale] duration-200 ease-out starting:-translate-y-2 starting:scale-[0.98] starting:opacity-0",
   surface:
-    "rounded-2xl border border-gray-200 bg-white/95 shadow-[0_10px_35px_rgb(15_23_42/0.06)]",
+    "rounded-2xl border border-gray-200 bg-white/95 shadow-[0_10px_35px_rgb(15_23_42/0.06)] dark:border-white/10 dark:bg-[#1a2236] dark:shadow-[0_10px_35px_rgb(0_0_0/0.3)]",
 } as const;

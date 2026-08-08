@@ -207,7 +207,11 @@ const DateSelector = ({
   return (
     <div className="relative min-w-0 flex-1">
       <button
-        className="search-segment relative z-10 w-full rounded-full px-6 py-3.5 text-left"
+        className={`search-segment relative z-10 w-full rounded-full px-6 py-3.5 text-left transition-colors duration-200 ${
+          active
+            ? "bg-rose-50 dark:bg-white/[0.06]"
+            : "hover:bg-gray-100/60 dark:hover:bg-white/[0.04]"
+        }`}
         type="button"
         onClick={onActivate}
       >

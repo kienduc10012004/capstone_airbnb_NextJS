@@ -266,6 +266,46 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
           initialLocationId={locationId || null}
         />
 
+        {/* Quick Filter Chips Bar matching Demo 5 */}
+        <div className="mt-6 flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+          <Link
+            className="shrink-0 rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-800 shadow-sm transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:bg-[#1e293b] dark:text-gray-100 dark:hover:border-rose-400"
+            href="/rooms"
+          >
+            Tất cả
+          </Link>
+          <button
+            className="shrink-0 rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-800 shadow-sm transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:bg-[#1e293b] dark:text-gray-100 dark:hover:border-rose-400"
+            type="button"
+          >
+            Loại nơi ở
+          </button>
+          <button
+            className="shrink-0 rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-800 shadow-sm transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:bg-[#1e293b] dark:text-gray-100 dark:hover:border-rose-400"
+            type="button"
+          >
+            Khoảng giá
+          </button>
+          <button
+            className="shrink-0 rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-800 shadow-sm transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:bg-[#1e293b] dark:text-gray-100 dark:hover:border-rose-400"
+            type="button"
+          >
+            Đặt ngay
+          </button>
+          <button
+            className="shrink-0 rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-800 shadow-sm transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:bg-[#1e293b] dark:text-gray-100 dark:hover:border-rose-400"
+            type="button"
+          >
+            Phòng & phòng ngủ
+          </button>
+          <button
+            className="shrink-0 rounded-full border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-800 shadow-sm transition-colors hover:border-rose-300 hover:bg-rose-50 hover:text-rose-600 dark:border-white/10 dark:bg-[#1e293b] dark:text-gray-100 dark:hover:border-rose-400"
+            type="button"
+          >
+            Bộ lọc khác
+          </button>
+        </div>
+
         <div className="mt-8 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-gray-900">

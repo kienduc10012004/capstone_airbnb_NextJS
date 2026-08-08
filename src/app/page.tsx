@@ -174,7 +174,7 @@ export default async function Home() {
           </section>
         )}
 
-        <section className="border-y border-gray-100 bg-gray-50/80 py-12">
+        <section className="border-y border-gray-100 bg-gray-50 dark:bg-slate-900/40 dark:border-white/10 py-12">
           <div className={uiClassNames.appContainer}>
             <div className="mb-6">
               <div>

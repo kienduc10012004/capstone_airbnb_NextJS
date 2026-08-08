@@ -39,7 +39,7 @@ const HomeSearchBar = ({
       ([entry]) => {
         setCompactVisible(
           !entry.isIntersecting &&
-            entry.boundingClientRect.bottom <= stickyHeaderHeight,
+          entry.boundingClientRect.bottom <= stickyHeaderHeight,
         );
       },
       {
@@ -72,7 +72,7 @@ const HomeSearchBar = ({
   );
 
   const searchPanel = (
-    <div className="mx-auto max-w-5xl">
+    <div className="mx-auto max-w-7xl w-full">
       <SearchPanel
         initialDates={initialDates}
         initialGuests={initialGuests}

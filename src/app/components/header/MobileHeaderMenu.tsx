@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import ThemeToggle from "@/app/components/ui/ThemeToggle";
 import UserMenuAvatar from "@/app/components/auth/UserMenuAvatar";
 import type { AuthMode } from "@/app/components/auth/AuthModal";
 import type { ApiUser } from "@/app/lib/api";
@@ -28,7 +29,7 @@ const isNavigationItemActive = (pathname: string, href: string) =>
   href === "/" ? pathname === href : pathname.startsWith(href);
 
 const MobileHeaderMenu = ({
-  accountMenuOpen,
+  accountMenuOpen: _accountMenuOpen,
   menuOpen,
   navigationItems,
   pathname,
@@ -36,7 +37,7 @@ const MobileHeaderMenu = ({
   onClose,
   onLogout,
   onOpenAuth,
-  onToggleAccountMenu,
+  onToggleAccountMenu: _onToggleAccountMenu,
 }: MobileHeaderMenuProps) => {
   if (!menuOpen) return null;
 
@@ -54,14 +55,17 @@ const MobileHeaderMenu = ({
       >
         <div className="flex items-center justify-between border-b border-gray-100 px-2 pb-3">
           <p className="text-sm font-semibold text-gray-950">Menu chính</p>
-          <button
-            aria-label="Đóng menu chính"
-            className="grid h-9 w-9 cursor-pointer place-items-center rounded-full text-gray-600 transition-colors duration-200 hover:bg-rose-50 hover:text-rose-600"
-            type="button"
-            onClick={onClose}
-          >
-            <i aria-hidden="true" className="fa-solid fa-xmark" />
-          </button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              aria-label="Đóng menu chính"
+              className="grid h-9 w-9 cursor-pointer place-items-center rounded-full text-gray-600 transition-colors duration-200 hover:bg-rose-50 hover:text-rose-600"
+              type="button"
+              onClick={onClose}
+            >
+              <i aria-hidden="true" className="fa-solid fa-xmark" />
+            </button>
+          </div>
         </div>
 
         <nav
@@ -91,127 +95,87 @@ const MobileHeaderMenu = ({
         </nav>
 
         <div className="mt-3 border-t border-gray-100 pt-3">
-          <button
-            aria-expanded={accountMenuOpen}
-            className={`flex w-full cursor-pointer items-center gap-3 rounded-xl border px-3 py-3 text-left transition-all duration-200 ${
-              accountMenuOpen
-                ? "border-rose-200 bg-rose-50"
-                : "border-gray-200 hover:border-rose-200 hover:bg-rose-50"
-            }`}
-            type="button"
-            onClick={onToggleAccountMenu}
-          >
-            {user ? (
-              <UserMenuAvatar
-                avatar={user.avatar}
-                key={user.avatar || user.id}
-                name={user.name}
-              />
-            ) : (
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-gray-900 text-sm text-white">
-                <i aria-hidden="true" className="fa-solid fa-user" />
-              </span>
-            )}
-            <span className="min-w-0 flex-1">
-              <span
-                className="block truncate text-sm font-semibold text-gray-950"
-                title={user ? `Xin chào ${user.name}` : "Xin chào bạn"}
-              >
-                {user ? `Xin chào ${user.name}` : "Xin chào bạn"}
-              </span>
-              <span className="block truncate text-xs text-gray-500">
-                {user?.email ?? "Đăng nhập để bắt đầu hành trình"}
-              </span>
-            </span>
-            <i
-              aria-hidden="true"
-              className={`fa-solid fa-chevron-right text-gray-500 transition-transform duration-300 ${
-                accountMenuOpen ? "rotate-90 text-rose-600" : ""
-              }`}
-            />
-          </button>
-
-          {accountMenuOpen && (
-            <div className="mt-3 rounded-2xl border border-gray-200 bg-gray-50 p-3 shadow-inner transition-[opacity,translate] duration-300 ease-out starting:-translate-x-3 starting:opacity-0">
-              <div className="mb-2 flex items-center justify-between px-1">
-                <p className="text-xs font-semibold tracking-wide text-gray-600 uppercase">
-                  Tài khoản
-                </p>
+          {user ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between rounded-xl bg-gray-50 p-3">
+                <div className="flex items-center gap-3">
+                  <UserMenuAvatar
+                    avatar={user.avatar}
+                    key={user.avatar || user.id}
+                    name={user.name}
+                  />
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-gray-950">
+                      {user.name}
+                    </p>
+                    <p className="truncate text-xs text-gray-500">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
                 <button
-                  aria-label="Đóng menu tài khoản"
-                  className="grid h-8 w-8 cursor-pointer place-items-center rounded-full text-gray-600 transition-colors duration-200 hover:bg-white hover:text-rose-600"
+                  className="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600 hover:bg-rose-100"
                   type="button"
-                  onClick={onToggleAccountMenu}
+                  onClick={onLogout}
                 >
-                  <i aria-hidden="true" className="fa-solid fa-xmark" />
+                  Đăng xuất
                 </button>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                {user ? (
-                  <>
-                    <Link
-                      className={`cursor-pointer rounded-xl bg-white px-3 py-3 text-center text-sm shadow-sm transition-colors duration-200 hover:text-rose-600 ${
-                        pathname === "/profile"
-                          ? "text-rose-600"
-                          : "text-gray-950"
-                      }`}
-                      href="/profile"
-                      onClick={onClose}
-                    >
-                      Hồ sơ và chuyến đi
-                    </Link>
-                    <Link
-                      className={`cursor-pointer rounded-xl bg-white px-3 py-3 text-center text-sm shadow-sm transition-colors duration-200 hover:text-rose-600 ${
-                        pathname === "/favorites"
-                          ? "text-rose-600"
-                          : "text-gray-950"
-                      }`}
-                      href="/favorites"
-                      onClick={onClose}
-                    >
-                      Phòng yêu thích
-                    </Link>
-                    {user.role === "ADMIN" && (
-                      <Link
-                        className={`cursor-pointer rounded-xl bg-white px-3 py-3 text-center text-sm font-medium shadow-sm transition-colors duration-200 hover:text-rose-600 ${
-                          pathname.startsWith("/admin")
-                            ? "text-rose-600"
-                            : "text-gray-950"
-                        }`}
-                        href="/admin"
-                        onClick={onClose}
-                      >
-                        Trang quản trị
-                      </Link>
-                    )}
-                    <button
-                      className="cursor-pointer rounded-xl bg-white px-3 py-3 text-sm text-gray-950 shadow-sm transition-colors duration-200 hover:text-rose-600"
-                      type="button"
-                      onClick={onLogout}
-                    >
-                      Đăng xuất
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      className="cursor-pointer rounded-xl bg-white px-3 py-3 text-sm font-semibold text-gray-950 shadow-sm transition-colors duration-200 hover:text-rose-600"
-                      type="button"
-                      onClick={() => onOpenAuth("SignIn")}
-                    >
-                      Đăng nhập
-                    </button>
-                    <button
-                      className="cursor-pointer rounded-xl bg-white px-3 py-3 text-sm text-gray-950 shadow-sm transition-colors duration-200 hover:text-rose-600"
-                      type="button"
-                      onClick={() => onOpenAuth("SignUp")}
-                    >
-                      Tạo tài khoản
-                    </button>
-                  </>
+                <Link
+                  className={`cursor-pointer rounded-xl border border-gray-200 bg-white p-3 text-center text-sm font-medium transition-colors hover:border-rose-300 hover:text-rose-600 ${
+                    pathname === "/profile"
+                      ? "border-rose-300 text-rose-600 bg-rose-50/50"
+                      : "text-gray-900"
+                  }`}
+                  href="/profile"
+                  onClick={onClose}
+                >
+                  Hồ sơ
+                </Link>
+                <Link
+                  className={`cursor-pointer rounded-xl border border-gray-200 bg-white p-3 text-center text-sm font-medium transition-colors hover:border-rose-300 hover:text-rose-600 ${
+                    pathname === "/favorites"
+                      ? "border-rose-300 text-rose-600 bg-rose-50/50"
+                      : "text-gray-900"
+                  }`}
+                  href="/favorites"
+                  onClick={onClose}
+                >
+                  Phòng yêu thích
+                </Link>
+                {user.role === "ADMIN" && (
+                  <Link
+                    className={`col-span-2 cursor-pointer rounded-xl border border-gray-200 bg-white p-3 text-center text-sm font-semibold transition-colors hover:border-rose-300 hover:text-rose-600 ${
+                      pathname.startsWith("/admin")
+                        ? "border-rose-300 text-rose-600 bg-rose-50/50"
+                        : "text-gray-900"
+                    }`}
+                    href="/admin"
+                    onClick={onClose}
+                  >
+                    Trang quản trị
+                  </Link>
                 )}
               </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <button
+                className="w-full cursor-pointer rounded-xl border border-gray-300 bg-white py-3 text-center text-sm font-semibold text-gray-900 shadow-xs hover:border-rose-300 hover:text-rose-600"
+                type="button"
+                onClick={() => onOpenAuth("SignIn")}
+              >
+                Đăng nhập
+              </button>
+              <button
+                className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-rose-500 to-pink-600 py-3 text-center text-sm font-semibold text-white shadow-sm hover:opacity-95"
+                type="button"
+                onClick={() => onOpenAuth("SignUp")}
+              >
+                Tạo tài khoản
+              </button>
             </div>
           )}
         </div>
