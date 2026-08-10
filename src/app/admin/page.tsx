@@ -132,7 +132,7 @@ export default function AdminDashboard() {
           <div className="mt-8 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
             {dashboardItems.map((item) => (
               <Link
-                className="group relative overflow-hidden rounded-2xl bg-white border border-gray-100 p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                className="group relative overflow-hidden rounded-2xl bg-white dark:bg-[#1a2236] border border-gray-200/80 dark:border-white/10 p-6 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 href={item.href}
                 key={item.key}
               >
@@ -141,7 +141,7 @@ export default function AdminDashboard() {
                   <div className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${item.gradient} shadow-lg ${item.shadow} text-white`}>
                     <i aria-hidden="true" className={`${item.icon} text-lg`} />
                   </div>
-                  <span className="flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-100 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
+                  <span className="flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-100 dark:border-emerald-500/30 px-2.5 py-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                     <i className="fa-solid fa-arrow-trend-up text-[9px]" />
                     Hoạt động
                   </span>
@@ -149,15 +149,15 @@ export default function AdminDashboard() {
 
                 {/* Stats */}
                 <div className="mt-4">
-                  <p className="text-4xl font-bold text-gray-900 tabular-nums">
+                  <p className="text-4xl font-bold text-gray-900 dark:text-white tabular-nums">
                     {stats[item.key].toLocaleString()}
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-gray-700">{item.label}</p>
-                  <p className="text-xs text-gray-400">{item.description}</p>
+                  <p className="mt-1 text-sm font-semibold text-gray-700 dark:text-slate-200">{item.label}</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-400">{item.description}</p>
                 </div>
 
                 {/* Arrow */}
-                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-gray-400 group-hover:text-rose-500 transition-colors">
+                <div className="mt-4 flex items-center gap-1 text-xs font-semibold text-gray-400 dark:text-slate-400 group-hover:text-rose-500 transition-colors">
                   Mở quản lý
                   <i aria-hidden="true" className="fa-solid fa-arrow-right text-[10px] translate-x-0 group-hover:translate-x-1 transition-transform" />
                 </div>
@@ -171,34 +171,34 @@ export default function AdminDashboard() {
           {/* Second row: Comments + Quick actions */}
           <div className="mt-6 grid gap-5 lg:grid-cols-3">
             {/* Comments stat - wide card */}
-            <div className="lg:col-span-2 rounded-2xl bg-white border border-gray-100 p-6 shadow-sm">
+            <div className="lg:col-span-2 rounded-2xl bg-white dark:bg-[#1a2236] border border-gray-200/80 dark:border-white/10 p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Đánh giá trong hệ thống</p>
-                  <p className="mt-2 text-5xl font-bold text-gray-900 tabular-nums">{stats.comments.toLocaleString()}</p>
+                  <p className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Đánh giá trong hệ thống</p>
+                  <p className="mt-2 text-5xl font-bold text-gray-900 dark:text-white tabular-nums">{stats.comments.toLocaleString()}</p>
                 </div>
                 <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-purple-500 to-violet-600 shadow-lg shadow-purple-200 text-white">
                   <i aria-hidden="true" className="fa-solid fa-star text-2xl" />
                 </div>
               </div>
-              <p className="mt-4 text-sm text-gray-500 leading-relaxed">
+              <p className="mt-4 text-sm text-gray-500 dark:text-slate-400 leading-relaxed">
                 Theo dõi đánh giá để nắm bắt chất lượng phòng và trải nghiệm của khách hàng.
               </p>
               {/* Progress bar decoration */}
               <div className="mt-5 space-y-2">
-                <div className="flex items-center justify-between text-xs text-gray-400">
+                <div className="flex items-center justify-between text-xs text-gray-400 dark:text-slate-400">
                   <span>Chỉ số hài lòng</span>
-                  <span className="font-semibold text-emerald-600">Tốt</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Tốt</span>
                 </div>
-                <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                <div className="h-2 rounded-full bg-gray-100 dark:bg-slate-800 overflow-hidden">
                   <div className="h-full w-4/5 rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-1000" />
                 </div>
               </div>
             </div>
 
             {/* Quick actions */}
-            <div className="rounded-2xl bg-white border border-gray-100 p-6 shadow-sm">
-              <p className="text-sm font-semibold text-gray-700 mb-4">
+            <div className="rounded-2xl bg-white dark:bg-[#1a2236] border border-gray-200/80 dark:border-white/10 p-6 shadow-sm">
+              <p className="text-sm font-semibold text-gray-700 dark:text-slate-200 mb-4">
                 <i className="fa-solid fa-bolt text-amber-500 mr-2" />
                 Thao tác nhanh
               </p>
@@ -207,13 +207,13 @@ export default function AdminDashboard() {
                   <Link
                     key={action.href}
                     href={action.href}
-                    className="flex items-center gap-3 rounded-xl border border-gray-100 p-3 text-sm font-medium text-gray-700 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 group"
+                    className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-white/10 p-3 text-sm font-medium text-gray-700 dark:text-slate-200 hover:border-rose-200 hover:bg-rose-50 dark:hover:bg-white/5 dark:hover:text-rose-400 transition-all duration-200 group"
                   >
-                    <span className={`grid h-8 w-8 place-items-center rounded-lg bg-gray-50 group-hover:bg-white ${action.color} transition-colors`}>
+                    <span className={`grid h-8 w-8 place-items-center rounded-lg bg-gray-50 dark:bg-white/5 group-hover:bg-white dark:group-hover:bg-white/10 ${action.color} transition-colors`}>
                       <i className={`${action.icon} text-sm`} />
                     </span>
                     {action.label}
-                    <i className="fa-solid fa-chevron-right ml-auto text-[10px] text-gray-300 group-hover:text-rose-400 transition-colors" />
+                    <i className="fa-solid fa-chevron-right ml-auto text-[10px] text-gray-300 dark:text-slate-600 group-hover:text-rose-400 transition-colors" />
                   </Link>
                 ))}
               </div>

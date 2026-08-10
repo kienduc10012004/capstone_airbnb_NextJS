@@ -124,10 +124,10 @@ const MobileHeaderMenu = ({
 
               <div className="grid grid-cols-2 gap-2">
                 <Link
-                  className={`cursor-pointer rounded-xl border border-gray-200 bg-white p-3 text-center text-sm font-medium transition-colors hover:border-rose-300 hover:text-rose-600 ${
+                  className={`cursor-pointer rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a2236] p-3 text-center text-sm font-medium transition-colors hover:border-rose-300 hover:text-rose-600 ${
                     pathname === "/profile"
-                      ? "border-rose-300 text-rose-600 bg-rose-50/50"
-                      : "text-gray-900"
+                      ? "border-rose-300 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-500/20"
+                      : "text-gray-900 dark:text-slate-200"
                   }`}
                   href="/profile"
                   onClick={onClose}
@@ -135,10 +135,10 @@ const MobileHeaderMenu = ({
                   Hồ sơ
                 </Link>
                 <Link
-                  className={`cursor-pointer rounded-xl border border-gray-200 bg-white p-3 text-center text-sm font-medium transition-colors hover:border-rose-300 hover:text-rose-600 ${
+                  className={`cursor-pointer rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a2236] p-3 text-center text-sm font-medium transition-colors hover:border-rose-300 hover:text-rose-600 ${
                     pathname === "/favorites"
-                      ? "border-rose-300 text-rose-600 bg-rose-50/50"
-                      : "text-gray-900"
+                      ? "border-rose-300 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-500/20"
+                      : "text-gray-900 dark:text-slate-200"
                   }`}
                   href="/favorites"
                   onClick={onClose}
@@ -147,10 +147,10 @@ const MobileHeaderMenu = ({
                 </Link>
                 {user.role === "ADMIN" && (
                   <Link
-                    className={`col-span-2 cursor-pointer rounded-xl border border-gray-200 bg-white p-3 text-center text-sm font-semibold transition-colors hover:border-rose-300 hover:text-rose-600 ${
+                    className={`col-span-2 cursor-pointer rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a2236] p-3 text-center text-sm font-semibold transition-colors hover:border-rose-300 hover:text-rose-600 ${
                       pathname.startsWith("/admin")
-                        ? "border-rose-300 text-rose-600 bg-rose-50/50"
-                        : "text-gray-900"
+                        ? "border-rose-300 text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-500/20"
+                        : "text-gray-900 dark:text-slate-200"
                     }`}
                     href="/admin"
                     onClick={onClose}

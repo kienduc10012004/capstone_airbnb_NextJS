@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import AdminMobileMenu from "@/app/components/admin/AdminMobileMenu";
 import LoadingState from "@/app/components/ui/LoadingState";
+import ThemeToggle from "@/app/components/ui/ThemeToggle";
 import { useAuthStore } from "@/app/store/useAuthStore";
 
 const adminNavMenu = [
@@ -88,7 +89,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   );
 
   return (
-    <div className="min-h-screen bg-[#f0f2f7] lg:grid lg:grid-cols-[260px_1fr]">
+    <div className="min-h-screen bg-[#f0f2f7] dark:bg-[#0f172a] lg:grid lg:grid-cols-[260px_1fr]">
       {/* Sidebar */}
       <aside className="sticky top-0 z-50 border-b border-gray-800/50 bg-[#0f1629] text-white lg:h-screen lg:border-r lg:border-b-0 lg:flex lg:flex-col">
         {/* Logo */}
@@ -198,24 +199,25 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Main content area */}
       <div className="flex min-w-0 flex-col">
         {/* Top header bar */}
-        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-200/80 bg-white/95 px-4 py-3 backdrop-blur-sm sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-200/80 bg-white/95 dark:border-white/10 dark:bg-[#1a2236]/95 px-4 py-3 backdrop-blur-sm sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-sm">
-            <Link href="/admin" className="text-gray-400 hover:text-gray-700 transition-colors">
+            <Link href="/admin" className="text-gray-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors">
               <i className="fa-solid fa-house-chimney text-xs" />
             </Link>
             {activeNav && activeNav.href !== "/admin" && (
               <>
-                <i className="fa-solid fa-chevron-right text-[10px] text-gray-300" />
-                <span className="font-medium text-gray-700">{activeNav.label}</span>
+                <i className="fa-solid fa-chevron-right text-[10px] text-gray-300 dark:text-slate-600" />
+                <span className="font-medium text-gray-700 dark:text-slate-200">{activeNav.label}</span>
               </>
             )}
             {activeNav?.href === "/admin" && (
-              <span className="font-medium text-gray-700">Tổng quan</span>
+              <span className="font-medium text-gray-700 dark:text-slate-200">Tổng quan</span>
             )}
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 rounded-xl bg-gray-100 px-3 py-1.5 text-xs text-gray-500">
+            <ThemeToggle />
+            <div className="hidden sm:flex items-center gap-2 rounded-xl bg-gray-100 dark:bg-white/10 px-3 py-1.5 text-xs text-gray-500 dark:text-slate-300">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Hệ thống hoạt động
             </div>

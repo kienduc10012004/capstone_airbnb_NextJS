@@ -49,13 +49,13 @@ const CalendarMonth = ({
   onSelect,
 }: CalendarMonthProps) => (
   <div className="min-w-0 flex-1">
-    <h4 className="text-center text-sm font-semibold capitalize text-gray-900">
+    <h4 className="text-center text-sm font-semibold capitalize text-gray-900 dark:text-white">
       {formatMonth(month)}
     </h4>
     <div className="mt-4 grid grid-cols-7 text-center">
       {weekDays.map((day) => (
         <span
-          className="py-2 text-[11px] font-semibold text-gray-400"
+          className="py-2 text-[11px] font-semibold text-gray-400 dark:text-slate-400"
           key={day}
         >
           {day}
@@ -72,7 +72,6 @@ const CalendarMonth = ({
         // Confirmed selection
         const isConfirmedStart = dateKey === checkIn;
         const isConfirmedEnd = dateKey === checkOut;
-        const confirmedSelected = isConfirmedStart || isConfirmedEnd;
 
         const confirmedInRange =
           Boolean(checkIn && checkOut) &&
@@ -85,7 +84,6 @@ const CalendarMonth = ({
             ? hoveredDate
             : null;
 
-        const isPreviewStart = pickingEnd && isConfirmedStart && Boolean(previewCheckOut);
         const isPreviewEnd =
           pickingEnd && previewCheckOut !== null && toDateKey(previewCheckOut) === dateKey;
 
@@ -111,11 +109,11 @@ const CalendarMonth = ({
             key={dateKey}
             className={`relative my-0.5 flex h-10 items-center justify-center transition-colors duration-100 ${
               inRange
-                ? "bg-rose-100"
+                ? "bg-rose-100 dark:bg-rose-950/60"
                 : showRightHalf
-                  ? "bg-gradient-to-r from-transparent to-rose-100"
+                  ? "bg-gradient-to-r from-transparent to-rose-100 dark:to-rose-950/60"
                   : showLeftHalf
-                    ? "bg-gradient-to-l from-transparent to-rose-100"
+                    ? "bg-gradient-to-l from-transparent to-rose-100 dark:to-rose-950/60"
                     : ""
             }`}
           >
@@ -123,12 +121,12 @@ const CalendarMonth = ({
               aria-label={date.toLocaleDateString("vi-VN")}
               className={`relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-medium transition-all duration-150 ${
                 selected
-                  ? "bg-rose-500 font-semibold text-white shadow-md shadow-rose-200 scale-105"
+                  ? "bg-rose-500 font-semibold text-white shadow-md shadow-rose-500/30 scale-105"
                   : inRange
-                    ? "text-rose-700 hover:bg-rose-200"
+                    ? "text-rose-700 dark:text-rose-300 hover:bg-rose-200 dark:hover:bg-rose-900/60"
                     : disabled
-                      ? "cursor-not-allowed text-gray-300"
-                      : "text-gray-800 hover:bg-rose-50 hover:text-rose-600 hover:border hover:border-rose-300"
+                      ? "cursor-not-allowed text-gray-300 dark:text-slate-600"
+                      : "text-gray-800 dark:text-slate-200 hover:bg-rose-50 dark:hover:bg-rose-500/20 hover:text-rose-600 dark:hover:text-rose-400 hover:border hover:border-rose-300 dark:hover:border-rose-500/40"
               }`}
               disabled={disabled}
               type="button"
@@ -194,11 +192,11 @@ const DateSelector = ({
   const content = (
     <div className="p-5 sm:p-7">
       {/* Tab selector */}
-      <div className="mx-auto mb-6 flex w-fit rounded-full bg-gray-100 p-1">
-        <span className="rounded-full bg-white px-5 py-2 text-xs font-semibold shadow-sm text-gray-900">
+      <div className="mx-auto mb-6 flex w-fit rounded-full bg-gray-100 dark:bg-slate-800 p-1">
+        <span className="rounded-full bg-white dark:bg-slate-700 px-5 py-2 text-xs font-semibold shadow-sm text-gray-900 dark:text-white">
           Chọn ngày
         </span>
-        <span className="px-5 py-2 text-xs font-semibold text-gray-400">
+        <span className="px-5 py-2 text-xs font-semibold text-gray-400 dark:text-slate-400">
           Ngày linh hoạt
         </span>
       </div>
@@ -206,7 +204,7 @@ const DateSelector = ({
       {/* Hint when picking end */}
       {pickingEnd && (
         <div className="mb-5 flex justify-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 border border-rose-200 px-4 py-1.5 text-xs font-semibold text-rose-600 animate-pulse">
+          <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-500/30 px-4 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-300 animate-pulse">
             <i aria-hidden="true" className="fa-solid fa-hand-pointer" />
             Di chuột để xem, nhấn để chọn ngày trả phòng
           </span>
@@ -216,7 +214,7 @@ const DateSelector = ({
       {/* Confirmed range pill */}
       {value.checkIn && !pickingEnd && (
         <div className="mb-5 flex justify-center">
-          <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 border border-rose-200 px-4 py-1.5 text-xs font-semibold text-rose-600">
+          <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-500/30 px-4 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-300">
             <i aria-hidden="true" className="fa-solid fa-calendar-days" />
             {valueLabel}
           </span>
@@ -266,9 +264,9 @@ const DateSelector = ({
           )}
         </div>
       </div>
-      <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
+      <div className="mt-5 flex items-center justify-between border-t border-gray-100 dark:border-white/10 pt-4">
         <button
-          className="text-sm font-semibold text-gray-500 underline hover:text-gray-900 transition-colors"
+          className="text-sm font-semibold text-gray-500 dark:text-slate-400 underline hover:text-gray-900 dark:hover:text-white transition-colors"
           type="button"
           onClick={() => {
             onChange({ checkIn: "", checkOut: "" });
@@ -277,7 +275,7 @@ const DateSelector = ({
         >
           Xóa ngày
         </button>
-        <p className={`text-sm font-medium transition-colors duration-150 ${previewEnd ? "text-rose-400" : "text-rose-500"}`}>
+        <p className={`text-sm font-medium transition-colors duration-150 ${previewEnd ? "text-rose-400" : "text-rose-500 dark:text-rose-400"}`}>
           {valueLabel}
         </p>
       </div>
@@ -287,8 +285,8 @@ const DateSelector = ({
   if (variant === "mobile") {
     return (
       <section
-        className={`overflow-hidden rounded-2xl border bg-white shadow-sm ${
-          active ? "border-gray-200 shadow-lg" : "border-gray-200"
+        className={`overflow-hidden rounded-2xl border bg-white dark:bg-[#1a2236] shadow-sm ${
+          active ? "border-gray-200 dark:border-white/10 shadow-lg" : "border-gray-200 dark:border-white/10"
         }`}
       >
         <button
@@ -296,12 +294,12 @@ const DateSelector = ({
           type="button"
           onClick={onActivate}
         >
-          <span className="text-sm font-semibold text-gray-500">Thời gian</span>
-          <span className="text-sm font-semibold text-gray-900">
+          <span className="text-sm font-semibold text-gray-500 dark:text-slate-400">Thời gian</span>
+          <span className="text-sm font-semibold text-gray-900 dark:text-white">
             {valueLabel}
           </span>
         </button>
-        {active && <div className="border-t border-gray-100">{content}</div>}
+        {active && <div className="border-t border-gray-100 dark:border-white/10">{content}</div>}
       </section>
     );
   }
@@ -317,17 +315,17 @@ const DateSelector = ({
         type="button"
         onClick={onActivate}
       >
-        <span className="block text-xs font-semibold text-gray-900">
+        <span className="block text-xs font-semibold text-gray-900 dark:text-white">
           Thời gian
         </span>
-        <span className="mt-0.5 block truncate text-sm text-gray-500">
+        <span className="mt-0.5 block truncate text-sm text-gray-500 dark:text-slate-400">
           {valueLabel}
         </span>
       </button>
       {active && (
         <div className="absolute top-[calc(100%+14px)] left-1/2 z-30 w-[min(780px,calc(100vw-32px))] -translate-x-1/2">
           <div
-            className={`${uiClassNames.popoverMotion} overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl`}
+            className={`${uiClassNames.popoverMotion} overflow-hidden rounded-3xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a2236] shadow-2xl`}
           >
             {content}
           </div>

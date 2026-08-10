@@ -24,6 +24,10 @@ import {
   type ApiUser,
 } from "@/app/lib/api";
 import { formatDateForInput } from "@/app/lib/date";
+import {
+  getStayDateRange,
+  hasBookingConflict,
+} from "@/app/lib/booking-availability";
 import { bookingSchema } from "@/app/lib/schemas";
 import { uiClassNames } from "@/app/lib/styles";
 import { useToastStore } from "@/app/store/useToastStore";
@@ -149,12 +153,45 @@ export default function AdminBookingsPage() {
       return;
     }
 
+    const targetRoomId = Number(formData.get("maPhong"));
+    const requestedRange = getStayDateRange(
+      parsed.data.ngayDen,
+      parsed.data.ngayDi,
+    );
+
+    if (!requestedRange) {
+      setMessage({
+        text: "Ngày nhận và ngày trả phòng không hợp lệ.",
+        type: "error",
+      });
+      return;
+    }
+
+    const room = roomMap.get(targetRoomId);
+    if (room && parsed.data.soLuongKhach > room.khach) {
+      setMessage({
+        text: `Số lượng khách vượt quá sức chứa tối đa của phòng (${room.khach} khách).`,
+        type: "error",
+      });
+      return;
+    }
+
     setSaving(true);
     try {
+      const otherBookings = bookings.filter((b) => b.id !== editing.id);
+      if (hasBookingConflict(otherBookings, targetRoomId, requestedRange)) {
+        setMessage({
+          text: "Phòng đã có lượt đặt trùng khoảng thời gian này.",
+          type: "error",
+        });
+        setSaving(false);
+        return;
+      }
+
       await updateBooking(editing.id, {
         ...editing,
         maNguoiDung: Number(formData.get("maNguoiDung")),
-        maPhong: Number(formData.get("maPhong")),
+        maPhong: targetRoomId,
         ngayDen: new Date(parsed.data.ngayDen).toISOString(),
         ngayDi: new Date(parsed.data.ngayDi).toISOString(),
         soLuongKhach: parsed.data.soLuongKhach,

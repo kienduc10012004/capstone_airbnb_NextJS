@@ -46,6 +46,7 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [user, setUser] = useState(currentUser);
   const [pendingValues, setPendingValues] = useState<ProfileFormData | null>(
     null,
@@ -170,29 +171,36 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
         title="Admin của tôi"
       />
 
-      <section className="mt-6 max-w-4xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_10px_35px_rgb(15_23_42/0.06)]">
+      <section className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_10px_35px_rgb(15_23_42/0.06)]">
         {/* Avatar banner */}
-        <div className="border-b border-gray-200/70 bg-gradient-to-r from-rose-50 to-pink-50 p-6 sm:p-8">
-          <div className="flex flex-col items-center gap-5 sm:flex-row">
+        <div className="border-b border-gray-200/70 bg-gradient-to-r from-rose-50 to-pink-50 p-5 sm:p-8">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
             {/* Avatar */}
-            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-gray-900 ring-4 ring-white">
-              {avatarSource ? (
-                <Image
-                  fill
-                  alt={user.name}
-                  className="object-cover"
-                  sizes="96px"
-                  src={avatarSource}
-                />
-              ) : (
-                <div className="grid h-full place-items-center bg-gradient-to-br from-rose-500 to-pink-600 text-3xl font-semibold text-white">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-              )}
+            <div className="flex items-center gap-4 sm:gap-0 sm:block">
+              <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-gray-900 ring-4 ring-white sm:h-24 sm:w-24">
+                {avatarSource ? (
+                  <Image
+                    fill
+                    alt={user.name}
+                    className="object-cover"
+                    sizes="96px"
+                    src={avatarSource}
+                  />
+                ) : (
+                  <div className="grid h-full place-items-center bg-gradient-to-br from-rose-500 to-pink-600 text-3xl font-semibold text-white">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              {/* Name shown inline on mobile next to avatar */}
+              <div className="sm:hidden">
+                <h2 className="text-lg font-semibold text-gray-900">{user.name}</h2>
+                <p className="text-xs text-gray-500">{user.email}</p>
+              </div>
             </div>
 
-            {/* Name + upload btn */}
-            <div className="text-center sm:text-left">
+            {/* Name + upload btn (desktop) */}
+            <div className="hidden sm:block">
               <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
               <p className="mt-1 text-sm text-gray-500">{user.email}</p>
               <input
@@ -216,9 +224,28 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
               </p>
             </div>
 
+            {/* Upload btn mobile */}
+            <div className="flex items-center gap-3 sm:hidden">
+              <input
+                ref={fileInputRef}
+                accept="image/*"
+                className="hidden"
+                type="file"
+                onChange={changeAvatar}
+              />
+              <Button
+                loading={uploading}
+                variant="secondary"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <i className="fa-solid fa-camera" />
+                Đổi ảnh
+              </Button>
+            </div>
+
             {/* Admin badge card */}
-            <div className="mt-4 rounded-2xl border border-rose-200/80 bg-white/80 p-4 shadow-sm sm:mt-0 sm:ml-auto sm:max-w-xs">
-              <div className="flex items-center gap-2 text-sm font-bold text-rose-600">
+            <div className="rounded-2xl border border-emerald-200/80 bg-white/80 p-4 shadow-sm sm:ml-auto sm:max-w-xs">
+              <div className="flex items-center gap-2 text-sm font-bold text-emerald-600">
                 <i className="fa-solid fa-shield-halved text-base" />
                 <span>Quyền quản trị viên</span>
               </div>
@@ -226,7 +253,7 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
                 Tài khoản của bạn có toàn quyền truy cập và quản lý hệ thống.
               </p>
               <button
-                className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition-colors hover:bg-rose-100"
+                className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100"
                 type="button"
                 onClick={() =>
                   showToast(
@@ -257,10 +284,11 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
             <label className="text-sm font-medium text-gray-700">
               Họ và tên
               <input
-                className={`${uiClassNames.field} mt-1.5`}
+                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600" : ""}`}
+                readOnly={!isEditing}
                 {...register("name")}
               />
-              {errors.name && (
+              {errors.name && isEditing && (
                 <span className="mt-1 block text-xs text-red-500">
                   {errors.name.message}
                 </span>
@@ -271,11 +299,12 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
               Email đăng nhập
               <input
                 autoComplete="email"
-                className={`${uiClassNames.field} mt-1.5`}
+                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600" : ""}`}
+                readOnly={!isEditing}
                 type="email"
                 {...register("email")}
               />
-              {errors.email && (
+              {errors.email && isEditing && (
                 <span className="mt-1 block text-xs text-red-500">
                   {errors.email.message}
                 </span>
@@ -285,11 +314,12 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
             <label className="text-sm font-medium text-gray-700">
               Số điện thoại
               <input
-                className={`${uiClassNames.field} mt-1.5`}
+                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600" : ""}`}
                 inputMode="numeric"
+                readOnly={!isEditing}
                 {...register("phone")}
               />
-              {errors.phone && (
+              {errors.phone && isEditing && (
                 <span className="mt-1 block text-xs text-red-500">
                   {errors.phone.message}
                 </span>
@@ -299,11 +329,12 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
             <label className="text-sm font-medium text-gray-700">
               Ngày sinh
               <input
-                className={`${uiClassNames.field} mt-1.5`}
+                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600" : ""}`}
+                readOnly={!isEditing}
                 type="date"
                 {...register("birthday")}
               />
-              {errors.birthday && (
+              {errors.birthday && isEditing && (
                 <span className="mt-1 block text-xs text-red-500">
                   {errors.birthday.message}
                 </span>
@@ -313,7 +344,8 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
             <label className="text-sm font-medium text-gray-700">
               Giới tính
               <select
-                className={`${uiClassNames.field} mt-1.5`}
+                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default bg-gray-50 text-gray-600" : ""}`}
+                disabled={!isEditing}
                 {...register("gender")}
               >
                 <option value="true">Nam</option>
@@ -333,11 +365,47 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
             </label>
           </div>
 
-          <div className="flex justify-end border-t border-gray-100 pt-4">
-            <Button type="submit" variant="edit">
-              <i className="fa-solid fa-floppy-disk" />
-              Lưu thay đổi
-            </Button>
+          <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+            {isEditing ? (
+              <p className="text-xs text-amber-600">
+                <i className="fa-solid fa-triangle-exclamation mr-1" />
+                Đang ở chế độ chỉnh sửa
+              </p>
+            ) : (
+              <p className="text-xs text-gray-400">
+                Bấm “Cập nhật” để chỉnh sửa thông tin
+              </p>
+            )}
+            <div className="flex gap-2">
+              {isEditing ? (
+                <>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => {
+                      reset(getFormValues(user));
+                      setIsEditing(false);
+                    }}
+                  >
+                    <i className="fa-solid fa-xmark" />
+                    Hủy
+                  </Button>
+                  <Button type="submit" variant="edit">
+                    <i className="fa-solid fa-floppy-disk" />
+                    Lưu thay đổi
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  type="button"
+                  variant="edit"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <i className="fa-solid fa-pen-to-square" />
+                  Cập nhật thông tin
+                </Button>
+              )}
+            </div>
           </div>
         </form>
       </section>

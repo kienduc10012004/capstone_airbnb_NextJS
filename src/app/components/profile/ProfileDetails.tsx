@@ -27,6 +27,7 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [user, setUser] = useState(initialUser);
   const [message, setMessage] = useState<{
     text: string;
@@ -217,10 +218,13 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Họ và tên
             <input
-              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60 ${
+                !isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
+              }`}
+              readOnly={!isEditing}
               {...register("name")}
             />
-            {errors.name && (
+            {errors.name && isEditing && (
               <span className="text-xs text-red-500 dark:text-red-400">
                 {errors.name.message}
               </span>
@@ -229,11 +233,14 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Email
             <input
-              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60 ${
+                !isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
+              }`}
+              readOnly={!isEditing}
               type="email"
               {...register("email")}
             />
-            {errors.email && (
+            {errors.email && isEditing && (
               <span className="text-xs text-red-500 dark:text-red-400">
                 {errors.email.message}
               </span>
@@ -242,10 +249,13 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Số điện thoại
             <input
-              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60 ${
+                !isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
+              }`}
+              readOnly={!isEditing}
               {...register("phone")}
             />
-            {errors.phone && (
+            {errors.phone && isEditing && (
               <span className="text-xs text-red-500 dark:text-red-400">
                 {errors.phone.message}
               </span>
@@ -254,7 +264,10 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Ngày sinh
             <input
-              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:focus:border-rose-500/60`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:focus:border-rose-500/60 ${
+                !isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
+              }`}
+              readOnly={!isEditing}
               type="date"
               {...register("birthday")}
             />
@@ -262,7 +275,10 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Giới tính
             <select
-              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:focus:border-rose-500/60`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:focus:border-rose-500/60 ${
+                !isEditing ? "cursor-default bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
+              }`}
+              disabled={!isEditing}
               {...register("gender")}
             >
               <option value="true">Nam</option>
@@ -280,10 +296,47 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
             <input type="hidden" {...register("role")} />
           </label>
         </div>
-        <div className="flex justify-end border-t border-gray-100 pt-4 dark:border-white/10">
-          <Button loading={isSubmitting} type="submit" variant="edit">
-            Lưu thay đổi
-          </Button>
+        <div className="flex items-center justify-between border-t border-gray-100 pt-4 dark:border-white/10">
+          {isEditing ? (
+            <p className="text-xs text-amber-500">
+              <i className="fa-solid fa-triangle-exclamation mr-1" />
+              Đang ở chế độ chỉnh sửa
+            </p>
+          ) : (
+            <p className="text-xs text-gray-400 dark:text-slate-500">
+              Bấm “Cập nhật” để chỉnh sửa thông tin
+            </p>
+          )}
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => {
+                    reset();
+                    setIsEditing(false);
+                  }}
+                >
+                  <i className="fa-solid fa-xmark" />
+                  Hủy
+                </Button>
+                <Button loading={isSubmitting} type="submit" variant="edit">
+                  <i className="fa-solid fa-floppy-disk" />
+                  Lưu thay đổi
+                </Button>
+              </>
+            ) : (
+              <Button
+                type="button"
+                variant="edit"
+                onClick={() => setIsEditing(true)}
+              >
+                <i className="fa-solid fa-pen-to-square" />
+                Cập nhật thông tin
+              </Button>
+            )}
+          </div>
         </div>
       </form>
     </section>

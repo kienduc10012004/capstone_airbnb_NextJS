@@ -1,15 +1,15 @@
 export const uiClassNames = {
   appContainer: "mx-auto w-full max-w-7xl px-4 sm:px-6",
   adminCard:
-    "rounded-2xl bg-white border border-gray-100 shadow-sm",
+    "rounded-2xl bg-white dark:bg-[#1a2236] border border-gray-200/80 dark:border-white/10 shadow-sm",
   adminTableHead:
-    "border-b border-gray-100 bg-gray-50/80 text-xs font-bold uppercase tracking-wide text-gray-400",
+    "border-b border-gray-200/80 dark:border-white/10 bg-gray-50/80 dark:bg-slate-800/80 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-slate-400",
   adminTableRow:
-    "transition-colors duration-200 hover:bg-rose-50/40 group",
+    "transition-colors duration-200 hover:bg-rose-50/40 dark:hover:bg-white/5 group border-b border-gray-100 dark:border-white/5 text-gray-900 dark:text-slate-100",
   cardImageZoom:
     "[backface-visibility:hidden] [transform:translateZ(0)] object-cover transition-[scale,transform] duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] [will-change:scale,transform]",
   field:
-    "w-full rounded-xl border border-gray-300 bg-white px-[0.9rem] py-[0.7rem] text-gray-900 transition-[border-color,box-shadow] duration-150 focus:border-rose-500 focus:shadow-[0_0_0_3px_rgb(244_63_94/0.12)] focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500",
+    "w-full rounded-xl border border-gray-300 dark:border-white/20 bg-white dark:bg-slate-800 px-[0.9rem] py-[0.7rem] text-gray-900 dark:text-white transition-[border-color,box-shadow] duration-150 focus:border-rose-500 focus:shadow-[0_0_0_3px_rgb(244_63_94/0.12)] focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50 dark:disabled:bg-slate-900 disabled:text-gray-500 dark:disabled:text-slate-400",
   globalInteractions:
     "[&_:is(a,button,select,[role='button'],summary):not(:disabled)]:cursor-pointer [&_input:is([type='date'],[type='checkbox'],[type='radio'],[type='file']):not(:disabled)]:cursor-pointer [&_:is(a,button,select,[role='button'],summary):not(:disabled):not([class*='transition'])]:transition-[color,background-color,border-color,box-shadow,transform,opacity] [&_:is(a,button,select,[role='button'],summary):not(:disabled):not([class*='duration-'])]:duration-300 [&_:is(a,button,select,[role='button'],summary):not(:disabled):not([class*='ease-'])]:ease-out [&_:is(a,button,input,select,textarea):focus-visible]:outline-3 [&_:is(a,button,input,select,textarea):focus-visible]:outline-offset-2 [&_:is(a,button,input,select,textarea):focus-visible]:outline-rose-500/25",
   iconButton:

@@ -41,15 +41,20 @@ const FavoriteButton = ({ roomId }: FavoriteButtonProps) => {
           : "Thêm vào danh sách yêu thích"
       }
       aria-pressed={favorite}
-      className={`absolute top-3 right-3 z-10 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-lg shadow-md backdrop-blur transition-[color,background-color,transform] duration-200 hover:scale-105 hover:bg-white ${
-        favorite ? "text-rose-500" : "text-gray-700 hover:text-rose-500"
+      className={`absolute top-3 right-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-base shadow-md backdrop-blur transition-all duration-200 hover:scale-110 active:scale-95 ${
+        favorite
+          ? "bg-white text-rose-500"
+          : "bg-white/90 text-gray-900/60 hover:text-rose-500"
       }`}
       disabled={!favoritesHydrated}
       title={favorite ? "Xóa khỏi phòng yêu thích" : "Thêm vào phòng yêu thích"}
       type="button"
       onClick={handleClick}
     >
-      <i aria-hidden="true" className="fa-regular fa-heart" />
+      <i
+        aria-hidden="true"
+        className={favorite ? "fa-solid fa-heart" : "fa-solid fa-heart"}
+      />
     </button>
   );
 };

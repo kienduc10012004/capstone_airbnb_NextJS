@@ -108,6 +108,10 @@ const Header = () => {
       setDesktopMenuOpen(false);
       setMobileMenuOpen(false);
       setMobileAccountMenuOpen(false);
+      setCompactSearchVisible(false);
+      if (pathname === "/") {
+        window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+      }
     }, 0);
 
     return () => window.clearTimeout(closeMenusAfterNavigation);
@@ -253,6 +257,15 @@ const Header = () => {
             </nav>
 
             <div className="flex items-center gap-2.5">
+              {hydrated && user?.role === "ADMIN" && (
+                <Link
+                  href="/admin"
+                  className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 border border-rose-500/30 px-3.5 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-500 dark:hover:text-white transition-all shadow-xs"
+                >
+                  <i className="fa-solid fa-shield-halved text-xs" />
+                  <span>Trang Admin</span>
+                </Link>
+              )}
               <ThemeToggle />
               {hydrated && !user ? (
                 <div className="hidden items-center gap-2.5 lg:flex">
@@ -305,8 +318,8 @@ const Header = () => {
                 </button>
 
                 {desktopMenuOpen && user && (
-                  <div className="absolute top-13 right-0 z-20 w-[min(288px,calc(100vw-32px))] overflow-hidden rounded-2xl border border-gray-200 bg-white py-2 shadow-2xl">
-                    <div className="border-b border-gray-100 px-4 py-3">
+                  <div className="absolute top-13 right-0 z-20 w-[min(288px,calc(100vw-32px))] overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-white/10 dark:bg-[#1a2236] py-2 shadow-2xl">
+                    <div className="border-b border-gray-100 dark:border-white/10 px-4 py-3">
                       <div className="flex items-center gap-3">
                         <UserMenuAvatar
                           avatar={user.avatar}
@@ -315,13 +328,13 @@ const Header = () => {
                         />
                         <div className="min-w-0 flex-1">
                           <p
-                            className="truncate text-sm font-bold text-gray-950"
+                            className="truncate text-sm font-bold text-gray-950 dark:text-white"
                             title={user.name}
                           >
                             {user.name}
                           </p>
                           <p
-                            className="truncate text-xs text-gray-500"
+                            className="truncate text-xs text-gray-500 dark:text-slate-400"
                             title={user.email}
                           >
                             {user.email}
@@ -331,10 +344,10 @@ const Header = () => {
                     </div>
                     <div className="p-2">
                       <Link
-                        className={`block rounded-xl px-3 py-2.5 text-sm font-medium ${
+                        className={`block rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                           pathname === "/profile"
-                            ? "bg-rose-50 text-rose-600"
-                            : "text-gray-950 hover:bg-rose-50 hover:text-rose-600"
+                            ? "bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 font-semibold"
+                            : "text-gray-900 dark:text-slate-200 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-white/5 dark:hover:text-rose-400"
                         }`}
                         href="/profile"
                         onClick={() => setDesktopMenuOpen(false)}
@@ -342,10 +355,10 @@ const Header = () => {
                         Hồ sơ và chuyến đi
                       </Link>
                       <Link
-                        className={`block rounded-xl px-3 py-2.5 text-sm font-medium ${
+                        className={`block rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                           pathname === "/favorites"
-                            ? "bg-rose-50 text-rose-600"
-                            : "text-gray-950 hover:bg-rose-50 hover:text-rose-600"
+                            ? "bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 font-semibold"
+                            : "text-gray-900 dark:text-slate-200 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-white/5 dark:hover:text-rose-400"
                         }`}
                         href="/favorites"
                         onClick={() => setDesktopMenuOpen(false)}
@@ -354,10 +367,10 @@ const Header = () => {
                       </Link>
                       {user.role === "ADMIN" && (
                         <Link
-                          className={`block rounded-xl px-3 py-2.5 text-sm font-semibold ${
+                          className={`block rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                             pathname.startsWith("/admin")
-                              ? "bg-rose-50 text-rose-600"
-                              : "text-gray-950 hover:bg-rose-50 hover:text-rose-600"
+                              ? "bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400 font-semibold"
+                              : "text-gray-900 dark:text-slate-200 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-white/5 dark:hover:text-rose-400"
                           }`}
                           href="/admin"
                           onClick={() => setDesktopMenuOpen(false)}
@@ -365,9 +378,9 @@ const Header = () => {
                           Trang quản trị
                         </Link>
                       )}
-                      <div className="my-1 border-t border-gray-100" />
+                      <div className="my-1 border-t border-gray-100 dark:border-white/10" />
                       <button
-                        className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
+                        className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-left text-sm font-semibold text-rose-600 dark:text-rose-400 transition-colors hover:bg-rose-50 dark:hover:bg-rose-500/10"
                         type="button"
                         onClick={requestLogout}
                       >
