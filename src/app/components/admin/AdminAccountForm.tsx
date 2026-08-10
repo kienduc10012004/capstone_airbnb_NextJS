@@ -171,9 +171,9 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
         title="Admin của tôi"
       />
 
-      <section className="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_10px_35px_rgb(15_23_42/0.06)]">
+      <section className="mt-6 overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1a2236] shadow-[0_10px_35px_rgb(15_23_42/0.06)]">
         {/* Avatar banner */}
-        <div className="border-b border-gray-200/70 bg-gradient-to-r from-rose-50 to-pink-50 p-5 sm:p-8">
+        <div className="border-b border-gray-200/70 dark:border-white/10 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-slate-800/90 dark:to-slate-900/90 p-5 sm:p-8">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
             {/* Avatar */}
             <div className="flex items-center gap-4 sm:gap-0 sm:block">
@@ -194,15 +194,15 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
               </div>
               {/* Name shown inline on mobile next to avatar */}
               <div className="sm:hidden">
-                <h2 className="text-lg font-semibold text-gray-900">{user.name}</h2>
-                <p className="text-xs text-gray-500">{user.email}</p>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{user.name}</h2>
+                <p className="text-xs text-gray-500 dark:text-slate-400">{user.email}</p>
               </div>
             </div>
 
             {/* Name + upload btn (desktop) */}
             <div className="hidden sm:block">
-              <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
-              <p className="mt-1 text-sm text-gray-500">{user.email}</p>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{user.name}</h2>
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">{user.email}</p>
               <input
                 ref={fileInputRef}
                 accept="image/*"
@@ -244,16 +244,16 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
             </div>
 
             {/* Admin badge card */}
-            <div className="rounded-2xl border border-emerald-200/80 bg-white/80 p-4 shadow-sm sm:ml-auto sm:max-w-xs">
-              <div className="flex items-center gap-2 text-sm font-bold text-emerald-600">
+            <div className="rounded-2xl border border-emerald-200/80 dark:border-emerald-500/30 bg-white/80 dark:bg-emerald-950/40 p-4 shadow-sm sm:ml-auto sm:max-w-xs">
+              <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400">
                 <i className="fa-solid fa-shield-halved text-base" />
                 <span>Quyền quản trị viên</span>
               </div>
-              <p className="mt-1 text-xs text-gray-500">
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-300">
                 Tài khoản của bạn có toàn quyền truy cập và quản lý hệ thống.
               </p>
               <button
-                className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100"
+                className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 dark:border-emerald-500/40 bg-emerald-50 dark:bg-emerald-900/40 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 transition-colors hover:bg-emerald-100 dark:hover:bg-emerald-900/60"
                 type="button"
                 onClick={() =>
                   showToast(
@@ -271,7 +271,7 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
 
         {/* Form */}
         <form
-          className="space-y-5 bg-white p-6 sm:p-8"
+          className="space-y-5 bg-white dark:bg-[#1a2236] p-6 sm:p-8"
           onSubmit={handleSubmit((values) => setPendingValues(values))}
         >
           {message && (
@@ -281,10 +281,10 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
           )}
 
           <div className="grid gap-5 sm:grid-cols-2">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-slate-200">
               Họ và tên
               <input
-                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600" : ""}`}
+                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 dark:bg-slate-800/60 text-gray-600 dark:text-slate-300" : ""}`}
                 readOnly={!isEditing}
                 {...register("name")}
               />
@@ -295,11 +295,11 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
               )}
             </label>
 
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-slate-200">
               Email đăng nhập
               <input
                 autoComplete="email"
-                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600" : ""}`}
+                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 dark:bg-slate-800/60 text-gray-600 dark:text-slate-300" : ""}`}
                 readOnly={!isEditing}
                 type="email"
                 {...register("email")}
@@ -311,10 +311,10 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
               )}
             </label>
 
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-slate-200">
               Số điện thoại
               <input
-                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600" : ""}`}
+                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 dark:bg-slate-800/60 text-gray-600 dark:text-slate-300" : ""}`}
                 inputMode="numeric"
                 readOnly={!isEditing}
                 {...register("phone")}
@@ -326,10 +326,10 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
               )}
             </label>
 
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-slate-200">
               Ngày sinh
               <input
-                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600" : ""}`}
+                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 dark:bg-slate-800/60 text-gray-600 dark:text-slate-300 [color-scheme:light_dark]" : ""}`}
                 readOnly={!isEditing}
                 type="date"
                 {...register("birthday")}
@@ -341,22 +341,22 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
               )}
             </label>
 
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-slate-200">
               Giới tính
               <select
-                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default bg-gray-50 text-gray-600" : ""}`}
+                className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default bg-gray-50 dark:bg-slate-800/60 text-gray-600 dark:text-slate-300" : ""}`}
                 disabled={!isEditing}
                 {...register("gender")}
               >
-                <option value="true">Nam</option>
-                <option value="false">Nữ</option>
+                <option value="true" className="dark:bg-slate-800 text-gray-900 dark:text-white">Nam</option>
+                <option value="false" className="dark:bg-slate-800 text-gray-900 dark:text-white">Nữ</option>
               </select>
             </label>
 
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-slate-200">
               Vai trò
               <input
-                className={`${uiClassNames.field} mt-1.5 cursor-not-allowed opacity-60`}
+                className={`${uiClassNames.field} mt-1.5 cursor-not-allowed bg-gray-50 dark:bg-slate-800/60 text-gray-600 dark:text-slate-300 opacity-60`}
                 disabled
                 readOnly
                 value="ADMIN"
@@ -365,14 +365,14 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
             </label>
           </div>
 
-          <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+          <div className="flex items-center justify-between border-t border-gray-100 dark:border-white/10 pt-4">
             {isEditing ? (
-              <p className="text-xs text-amber-600">
+              <p className="text-xs text-amber-600 dark:text-amber-400">
                 <i className="fa-solid fa-triangle-exclamation mr-1" />
                 Đang ở chế độ chỉnh sửa
               </p>
             ) : (
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 dark:text-slate-400">
                 Bấm “Cập nhật” để chỉnh sửa thông tin
               </p>
             )}
