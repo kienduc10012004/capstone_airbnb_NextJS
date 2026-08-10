@@ -1,5 +1,11 @@
 export const uiClassNames = {
   appContainer: "mx-auto w-full max-w-7xl px-4 sm:px-6",
+  adminCard:
+    "rounded-2xl bg-white border border-gray-100 shadow-sm",
+  adminTableHead:
+    "border-b border-gray-100 bg-gray-50/80 text-xs font-bold uppercase tracking-wide text-gray-400",
+  adminTableRow:
+    "transition-colors duration-200 hover:bg-rose-50/40 group",
   cardImageZoom:
     "[backface-visibility:hidden] [transform:translateZ(0)] object-cover transition-[scale,transform] duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] [will-change:scale,transform]",
   field:

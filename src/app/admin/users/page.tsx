@@ -296,20 +296,24 @@ export default function AdminUsersPage() {
         title="Quản lý người dùng"
       />
       <form
-        className={`${uiClassNames.surface} mt-6 grid grid-cols-2 gap-2 p-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]`}
+        className={`${uiClassNames.adminCard} mt-6 flex flex-wrap items-center gap-3 p-4`}
         onSubmit={search}
       >
-        <input
-          className={`${uiClassNames.field} col-span-2 sm:col-span-1`}
-          placeholder="Tìm theo tên hoặc email"
-          value={keyword}
-          onChange={(event) => setKeyword(event.target.value)}
-        />
-        <Button className="w-full whitespace-nowrap" type="submit">
-          Tìm
+        <div className="relative flex-1 min-w-48">
+          <i className="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+          <input
+            className={`${uiClassNames.field} pl-10`}
+            placeholder="Tìm theo tên hoặc email..."
+            value={keyword}
+            onChange={(event) => setKeyword(event.target.value)}
+          />
+        </div>
+        <Button className="whitespace-nowrap" type="submit">
+          <i className="fa-solid fa-search" />
+          Tìm kiếm
         </Button>
         <Button
-          className="w-full whitespace-nowrap"
+          className="whitespace-nowrap"
           disabled={!keyword}
           variant="secondary"
           onClick={() => {
@@ -317,6 +321,7 @@ export default function AdminUsersPage() {
             void loadPage(1, "");
           }}
         >
+          <i className="fa-solid fa-xmark" />
           Xóa lọc
         </Button>
       </form>
@@ -337,12 +342,12 @@ export default function AdminUsersPage() {
       ) : (
         <>
           <div
-            className={`${uiClassNames.surface} relative mt-6 w-full max-w-[calc(100vw-2rem)] overflow-hidden sm:max-w-[calc(100vw-3rem)] lg:max-w-[calc(100vw-314px)]`}
+            className={`${uiClassNames.adminCard} relative mt-6 w-full max-w-[calc(100vw-2rem)] overflow-hidden sm:max-w-[calc(100vw-3rem)] lg:max-w-[calc(100vw-330px)]`}
           >
             {loading && <LoadingOverlay label="Đang cập nhật người dùng..." />}
             <div className="max-w-full overflow-x-auto overscroll-x-contain">
               <table className="w-full min-w-[900px] text-left text-sm whitespace-nowrap">
-                <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+                <thead className={uiClassNames.adminTableHead}>
                   <tr>
                     <th className="px-5 py-4">ID</th>
                     <th className="px-5 py-4">Người dùng</th>
@@ -351,55 +356,69 @@ export default function AdminUsersPage() {
                     <th className="px-5 py-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-50">
                   {users.map((user) => (
                     <tr
-                      className="transition-colors duration-300 ease-out hover:bg-gray-50"
+                      className={uiClassNames.adminTableRow}
                       key={user.id}
                     >
-                      <td className="px-5 py-4 text-gray-500">{user.id}</td>
+                      <td className="px-5 py-4 font-mono text-xs text-gray-400">#{user.id}</td>
                       <td className="px-5 py-4">
-                        <p className="font-semibold text-gray-900">
-                          {user.name}
-                        </p>
-                        <p className="mt-1 text-xs text-gray-500">
-                          {user.email}
-                        </p>
+                        <div className="flex items-center gap-3">
+                          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 text-sm font-bold text-gray-600">
+                            {user.name?.[0]?.toUpperCase() ?? "?"}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">{user.name}</p>
+                            <p className="mt-0.5 text-xs text-gray-400">{user.email}</p>
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-5 py-4">
-                        {user.phone || (
-                          <span className="text-xs text-amber-600">
+                      <td className="px-5 py-4 text-gray-600">
+                        {user.phone ? (
+                          <span className="flex items-center gap-1.5">
+                            <i className="fa-solid fa-phone text-xs text-gray-300" />
+                            {user.phone}
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-600">
+                            <i className="fa-solid fa-triangle-exclamation text-[10px]" />
                             Chưa cập nhật
                           </span>
                         )}
                       </td>
                       <td className="px-5 py-4">
                         <span
-                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
                             user.role === "ADMIN"
-                              ? "bg-purple-100 text-purple-700"
-                              : "bg-gray-100 text-gray-600"
+                              ? "bg-purple-100 border border-purple-200 text-purple-700"
+                              : "bg-gray-100 border border-gray-200 text-gray-600"
                           }`}
                         >
+                          <span className={`h-1.5 w-1.5 rounded-full ${user.role === "ADMIN" ? "bg-purple-500" : "bg-gray-400"}`} />
                           {user.role}
                         </span>
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <Button
-                          disabled={user.id === currentUser?.id}
-                          loading={editingUserId === user.id}
-                          variant="edit"
-                          onClick={() => void openEdit(user)}
-                        >
-                          Sửa
-                        </Button>
-                        <Button
-                          disabled={user.id === currentUser?.id}
-                          variant="delete"
-                          onClick={() => setDeletingUser(user)}
-                        >
-                          Xóa
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            disabled={user.id === currentUser?.id}
+                            loading={editingUserId === user.id}
+                            variant="edit"
+                            onClick={() => void openEdit(user)}
+                          >
+                            <i className="fa-solid fa-pen-to-square" />
+                            Sửa
+                          </Button>
+                          <Button
+                            disabled={user.id === currentUser?.id}
+                            variant="delete"
+                            onClick={() => setDeletingUser(user)}
+                          >
+                            <i className="fa-solid fa-trash" />
+                            Xóa
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}

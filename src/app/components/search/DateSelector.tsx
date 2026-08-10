@@ -49,7 +49,7 @@ const CalendarMonth = ({
     <div className="mt-4 grid grid-cols-7 text-center">
       {weekDays.map((day) => (
         <span
-          className="py-2 text-[11px] font-semibold text-gray-500"
+          className="py-2 text-[11px] font-semibold text-gray-400"
           key={day}
         >
           {day}
@@ -61,28 +61,44 @@ const CalendarMonth = ({
         }
         const dateKey = toDateKey(date);
         const disabled = isBeforeToday(date);
-        const selected = dateKey === checkIn || dateKey === checkOut;
+        const isStart = dateKey === checkIn;
+        const isEnd = dateKey === checkOut;
+        const selected = isStart || isEnd;
         const inRange =
           Boolean(checkIn && checkOut) &&
           date > fromDateKey(checkIn) &&
           date < fromDateKey(checkOut);
+
+        // Determine half-background for connecting the range
+        const hasRange = Boolean(checkIn && checkOut);
+        const showRightHalf = hasRange && isStart;
+        const showLeftHalf = hasRange && isEnd;
+
         return (
-          <button
-            aria-label={date.toLocaleDateString("vi-VN")}
-            className={`mx-auto my-0.5 grid h-10 w-10 place-items-center rounded-full text-sm ${
-              selected
-                ? "bg-gray-950 font-semibold text-white"
-                : inRange
-                  ? "bg-gray-100 text-gray-900"
-                  : "hover:border hover:border-gray-900"
-            } disabled:cursor-not-allowed disabled:text-gray-300`}
-            disabled={disabled}
+          <div
             key={dateKey}
-            type="button"
-            onClick={() => onSelect(date)}
+            className={`relative my-0.5 flex h-10 items-center justify-center ${
+              inRange ? "bg-rose-100" : ""
+            } ${showRightHalf ? "bg-gradient-to-r from-transparent to-rose-100" : ""} ${showLeftHalf ? "bg-gradient-to-l from-transparent to-rose-100" : ""}`}
           >
-            {date.getDate()}
-          </button>
+            <button
+              aria-label={date.toLocaleDateString("vi-VN")}
+              className={`relative z-10 grid h-10 w-10 shrink-0 place-items-center rounded-full text-sm font-medium transition-all duration-150 ${
+                selected
+                  ? "bg-rose-500 font-semibold text-white shadow-md shadow-rose-200 scale-105"
+                  : inRange
+                    ? "text-rose-700 hover:bg-rose-200"
+                    : disabled
+                      ? "cursor-not-allowed text-gray-300"
+                      : "text-gray-800 hover:bg-rose-50 hover:text-rose-600 hover:border hover:border-rose-300"
+              }`}
+              disabled={disabled}
+              type="button"
+              onClick={() => onSelect(date)}
+            >
+              {date.getDate()}
+            </button>
+          </div>
         );
       })}
     </div>
@@ -124,14 +140,26 @@ const DateSelector = ({
 
   const content = (
     <div className="p-5 sm:p-7">
+      {/* Tab selector */}
       <div className="mx-auto mb-6 flex w-fit rounded-full bg-gray-100 p-1">
-        <span className="rounded-full bg-white px-5 py-2 text-xs font-semibold shadow-sm">
+        <span className="rounded-full bg-white px-5 py-2 text-xs font-semibold shadow-sm text-gray-900">
           Chọn ngày
         </span>
-        <span className="px-5 py-2 text-xs font-semibold text-gray-500">
+        <span className="px-5 py-2 text-xs font-semibold text-gray-400">
           Ngày linh hoạt
         </span>
       </div>
+
+      {/* Selected range pill */}
+      {value.checkIn && (
+        <div className="mb-5 flex justify-center">
+          <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 border border-rose-200 px-4 py-1.5 text-xs font-semibold text-rose-600">
+            <i aria-hidden="true" className="fa-solid fa-calendar-days" />
+            {valueLabel}
+          </span>
+        </div>
+      )}
+
       <div className="relative">
         <button
           aria-label="Tháng trước"
@@ -171,13 +199,13 @@ const DateSelector = ({
       </div>
       <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
         <button
-          className="text-sm font-semibold underline"
+          className="text-sm font-semibold text-gray-500 underline hover:text-gray-900 transition-colors"
           type="button"
           onClick={() => onChange({ checkIn: "", checkOut: "" })}
         >
           Xóa ngày
         </button>
-        <p className="text-sm font-medium text-gray-600">{valueLabel}</p>
+        <p className="text-sm font-medium text-rose-500">{valueLabel}</p>
       </div>
     </div>
   );
