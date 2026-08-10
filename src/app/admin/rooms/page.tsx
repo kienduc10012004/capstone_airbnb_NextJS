@@ -340,15 +340,19 @@ export default function AdminRoomsPage() {
                         ${room.giaTien}
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <Button variant="edit" onClick={() => openEdit(room)}>
-                          Sửa
-                        </Button>
-                        <Button
-                          variant="delete"
-                          onClick={() => setDeletingRoom(room)}
-                        >
-                          Xóa
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="edit" onClick={() => openEdit(room)}>
+                            <i className="fa-solid fa-pen-to-square" />
+                            Sửa
+                          </Button>
+                          <Button
+                            variant="delete"
+                            onClick={() => setDeletingRoom(room)}
+                          >
+                            <i className="fa-solid fa-trash" />
+                            Xóa
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))}

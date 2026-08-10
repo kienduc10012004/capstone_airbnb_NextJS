@@ -30,7 +30,10 @@ type DateSelectorProps = {
 type CalendarMonthProps = {
   checkIn: string;
   checkOut: string;
+  hoveredDate: Date | null;
   month: Date;
+  pickingEnd: boolean;
+  onHover: (date: Date | null) => void;
   onSelect: (date: Date) => void;
 };
 
@@ -39,7 +42,10 @@ const weekDays = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 const CalendarMonth = ({
   checkIn,
   checkOut,
+  hoveredDate,
   month,
+  pickingEnd,
+  onHover,
   onSelect,
 }: CalendarMonthProps) => (
   <div className="min-w-0 flex-1">
@@ -59,27 +65,59 @@ const CalendarMonth = ({
         if (!date) {
           return <span key={`empty-${index}`} />;
         }
+
         const dateKey = toDateKey(date);
         const disabled = isBeforeToday(date);
-        const isStart = dateKey === checkIn;
-        const isEnd = dateKey === checkOut;
-        const selected = isStart || isEnd;
-        const inRange =
+
+        // Confirmed selection
+        const isConfirmedStart = dateKey === checkIn;
+        const isConfirmedEnd = dateKey === checkOut;
+        const confirmedSelected = isConfirmedStart || isConfirmedEnd;
+
+        const confirmedInRange =
           Boolean(checkIn && checkOut) &&
           date > fromDateKey(checkIn) &&
           date < fromDateKey(checkOut);
 
-        // Determine half-background for connecting the range
-        const hasRange = Boolean(checkIn && checkOut);
+        // Hover preview (only when picking end date)
+        const previewCheckOut =
+          pickingEnd && hoveredDate && hoveredDate > fromDateKey(checkIn)
+            ? hoveredDate
+            : null;
+
+        const isPreviewStart = pickingEnd && isConfirmedStart && Boolean(previewCheckOut);
+        const isPreviewEnd =
+          pickingEnd && previewCheckOut !== null && toDateKey(previewCheckOut) === dateKey;
+
+        const inPreviewRange =
+          Boolean(checkIn && previewCheckOut) &&
+          date > fromDateKey(checkIn) &&
+          date < previewCheckOut!;
+
+        // Use preview range if hovering, else confirmed range
+        const inRange = previewCheckOut ? inPreviewRange : confirmedInRange;
+        const isStart = isConfirmedStart;
+        const isEnd = previewCheckOut ? isPreviewEnd : isConfirmedEnd;
+        const selected = isStart || isEnd;
+
+        const hasRange = Boolean(
+          previewCheckOut ? (checkIn && previewCheckOut) : (checkIn && checkOut)
+        );
         const showRightHalf = hasRange && isStart;
         const showLeftHalf = hasRange && isEnd;
 
         return (
           <div
             key={dateKey}
-            className={`relative my-0.5 flex h-10 items-center justify-center ${
-              inRange ? "bg-rose-100" : ""
-            } ${showRightHalf ? "bg-gradient-to-r from-transparent to-rose-100" : ""} ${showLeftHalf ? "bg-gradient-to-l from-transparent to-rose-100" : ""}`}
+            className={`relative my-0.5 flex h-10 items-center justify-center transition-colors duration-100 ${
+              inRange
+                ? "bg-rose-100"
+                : showRightHalf
+                  ? "bg-gradient-to-r from-transparent to-rose-100"
+                  : showLeftHalf
+                    ? "bg-gradient-to-l from-transparent to-rose-100"
+                    : ""
+            }`}
           >
             <button
               aria-label={date.toLocaleDateString("vi-VN")}
@@ -95,6 +133,8 @@ const CalendarMonth = ({
               disabled={disabled}
               type="button"
               onClick={() => onSelect(date)}
+              onMouseEnter={() => onHover(date)}
+              onMouseLeave={() => onHover(null)}
             >
               {date.getDate()}
             </button>
@@ -116,6 +156,10 @@ const DateSelector = ({
   const [visibleMonth, setVisibleMonth] = useState(() =>
     startOfMonth(new Date()),
   );
+  const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
+
+  // pickingEnd = đã chọn checkIn, chưa chọn checkOut
+  const pickingEnd = Boolean(value.checkIn && !value.checkOut);
 
   const selectDate = (date: Date) => {
     const dateKey = toDateKey(date);
@@ -128,15 +172,24 @@ const DateSelector = ({
       return;
     }
     onChange({ ...value, checkOut: dateKey });
+    setHoveredDate(null);
     onComplete();
   };
+
+  // Label dùng preview nếu đang hover
+  const previewEnd =
+    pickingEnd && hoveredDate && hoveredDate > fromDateKey(value.checkIn)
+      ? toDateKey(hoveredDate)
+      : "";
 
   const valueLabel =
     value.checkIn && value.checkOut
       ? `${formatShortDate(value.checkIn)} – ${formatShortDate(value.checkOut)}`
-      : value.checkIn
-        ? `${formatShortDate(value.checkIn)} – Thêm ngày`
-        : "Thêm ngày";
+      : value.checkIn && previewEnd
+        ? `${formatShortDate(value.checkIn)} – ${formatShortDate(previewEnd)}`
+        : value.checkIn
+          ? `${formatShortDate(value.checkIn)} – Thêm ngày`
+          : "Thêm ngày";
 
   const content = (
     <div className="p-5 sm:p-7">
@@ -150,8 +203,18 @@ const DateSelector = ({
         </span>
       </div>
 
-      {/* Selected range pill */}
-      {value.checkIn && (
+      {/* Hint when picking end */}
+      {pickingEnd && (
+        <div className="mb-5 flex justify-center">
+          <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 border border-rose-200 px-4 py-1.5 text-xs font-semibold text-rose-600 animate-pulse">
+            <i aria-hidden="true" className="fa-solid fa-hand-pointer" />
+            Di chuột để xem, nhấn để chọn ngày trả phòng
+          </span>
+        </div>
+      )}
+
+      {/* Confirmed range pill */}
+      {value.checkIn && !pickingEnd && (
         <div className="mb-5 flex justify-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 border border-rose-200 px-4 py-1.5 text-xs font-semibold text-rose-600">
             <i aria-hidden="true" className="fa-solid fa-calendar-days" />
@@ -184,14 +247,20 @@ const DateSelector = ({
           <CalendarMonth
             checkIn={value.checkIn}
             checkOut={value.checkOut}
+            hoveredDate={hoveredDate}
             month={visibleMonth}
+            pickingEnd={pickingEnd}
+            onHover={setHoveredDate}
             onSelect={selectDate}
           />
           {variant === "desktop" && (
             <CalendarMonth
               checkIn={value.checkIn}
               checkOut={value.checkOut}
+              hoveredDate={hoveredDate}
               month={addMonths(visibleMonth, 1)}
+              pickingEnd={pickingEnd}
+              onHover={setHoveredDate}
               onSelect={selectDate}
             />
           )}
@@ -201,11 +270,16 @@ const DateSelector = ({
         <button
           className="text-sm font-semibold text-gray-500 underline hover:text-gray-900 transition-colors"
           type="button"
-          onClick={() => onChange({ checkIn: "", checkOut: "" })}
+          onClick={() => {
+            onChange({ checkIn: "", checkOut: "" });
+            setHoveredDate(null);
+          }}
         >
           Xóa ngày
         </button>
-        <p className="text-sm font-medium text-rose-500">{valueLabel}</p>
+        <p className={`text-sm font-medium transition-colors duration-150 ${previewEnd ? "text-rose-400" : "text-rose-500"}`}>
+          {valueLabel}
+        </p>
       </div>
     </div>
   );

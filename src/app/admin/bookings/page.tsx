@@ -289,18 +289,22 @@ export default function AdminBookingsPage() {
                         </td>
                         <td className="px-5 py-4">{booking.soLuongKhach}</td>
                         <td className="px-5 py-4 text-right">
-                          <Button
-                            variant="edit"
-                            onClick={() => openEdit(booking.id)}
-                          >
-                            Sửa
-                          </Button>
-                          <Button
-                            variant="delete"
-                            onClick={() => setDeletingBooking(booking)}
-                          >
-                            Hủy
-                          </Button>
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="edit"
+                              onClick={() => openEdit(booking.id)}
+                            >
+                              <i className="fa-solid fa-pen-to-square" />
+                              Sửa
+                            </Button>
+                            <Button
+                              variant="delete"
+                              onClick={() => setDeletingBooking(booking)}
+                            >
+                              <i className="fa-solid fa-ban" />
+                              Hủy
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     );

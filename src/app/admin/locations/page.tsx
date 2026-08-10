@@ -310,12 +310,14 @@ export default function AdminLocationsPage() {
                     </div>
                     <div className="mt-4 flex gap-2">
                       <Button variant="edit" onClick={() => openEdit(location)}>
+                        <i className="fa-solid fa-pen-to-square" />
                         Sửa
                       </Button>
                       <Button
                         variant="delete"
                         onClick={() => setDeletingLocation(location)}
                       >
+                        <i className="fa-solid fa-trash" />
                         Xóa
                       </Button>
                     </div>

@@ -10,11 +10,6 @@ import { useAuthStore } from "@/app/store/useAuthStore";
 
 const adminNavMenu = [
   { href: "/admin", icon: "fa-solid fa-chart-pie", label: "Tổng quan" },
-  {
-    href: "/admin/account",
-    icon: "fa-solid fa-user-shield",
-    label: "Admin của tôi",
-  },
   { href: "/admin/users", icon: "fa-solid fa-users", label: "Người dùng" },
   {
     href: "/admin/locations",
@@ -26,6 +21,11 @@ const adminNavMenu = [
     href: "/admin/bookings",
     icon: "fa-solid fa-calendar-check",
     label: "Đặt phòng",
+  },
+  {
+    href: "/admin/account",
+    icon: "fa-solid fa-user-shield",
+    label: "Admin của tôi",
   },
 ];
 
