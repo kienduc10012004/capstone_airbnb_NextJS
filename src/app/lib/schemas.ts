@@ -102,12 +102,22 @@ export const roomSchema = z.object({
 
 export const bookingSchema = z
   .object({
-    ngayDen: requiredText("Ngày nhận phòng"),
-    ngayDi: requiredText("Ngày trả phòng"),
-    soLuongKhach: z.number().int().min(1, "Cần ít nhất một khách."),
+    ngayDen: requiredText("Ngày nhận phòng")
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày nhận phòng không đúng định dạng (YYYY-MM-DD).")
+      .refine((val) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return new Date(`${val}T00:00:00`) >= today;
+      }, "Ngày nhận phòng không thể nằm trong quá khứ."),
+    ngayDi: requiredText("Ngày trả phòng")
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày trả phòng không đúng định dạng (YYYY-MM-DD)."),
+    soLuongKhach: z
+      .number({ message: "Số lượng khách phải là số." })
+      .int("Số lượng khách phải là số nguyên.")
+      .min(1, "Cần ít nhất một khách."),
   })
-  .refine((data) => new Date(data.ngayDi) > new Date(data.ngayDen), {
-    message: "Ngày trả phòng phải sau ngày nhận phòng.",
+  .refine((data) => data.ngayDi > data.ngayDen, {
+    message: "Ngày trả phòng phải sau ngày nhận phòng ít nhất 1 đêm.",
     path: ["ngayDi"],
   });
 

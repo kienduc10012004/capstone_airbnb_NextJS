@@ -68,14 +68,7 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
           role: freshUser.role === "ADMIN" ? "ADMIN" : "USER",
         });
       })
-      .catch(() => {
-        if (active) {
-          setMessage({
-            text: "Đang hiển thị thông tin gần nhất từ phiên đăng nhập.",
-            type: "error",
-          });
-        }
-      })
+      .catch(() => undefined)
       .finally(() => {
         if (active) setLoading(false);
       });

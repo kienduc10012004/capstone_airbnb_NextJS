@@ -8,12 +8,9 @@ import AlarmTimePicker from "@/app/components/bookings/AlarmTimePicker";
 import Button from "@/app/components/ui/Button";
 import Modal from "@/app/components/ui/Modal";
 import StatusMessage from "@/app/components/ui/StatusMessage";
-import { createBooking, getApiErrorMessage, getBookings } from "@/app/lib/api";
+import { createBooking, getApiErrorMessage, getBookings, getRoomById } from "@/app/lib/api";
 import { OPEN_SIGN_IN_EVENT } from "@/app/lib/auth-events";
-import {
-  getStayDateRange,
-  hasBookingConflict,
-} from "@/app/lib/booking-availability";
+import { validateBookingBusinessRules } from "@/app/lib/booking-availability";
 import { formatDateForInput } from "@/app/lib/date";
 import { bookingSchema, type BookingFormData } from "@/app/lib/schemas";
 import { uiClassNames } from "@/app/lib/styles";
@@ -165,42 +162,73 @@ const BookingCard = ({
     }
 
     try {
-      const requestedRange = getStayDateRange(values.ngayDen, values.ngayDi);
-      if (!requestedRange) {
-        setMessage({
-          text: "Ngày nhận và ngày trả phòng không hợp lệ.",
-          type: "error",
-        });
-        return;
-      }
+      // Query dữ liệu mới nhất từ server để kiểm tra nghiệp vụ
+      const [roomData, bookingsResponse] = await Promise.all([
+        getRoomById(roomId).catch(() => null),
+        getBookings(),
+      ]);
 
-      const bookingsResponse = await getBookings();
-      if (
-        hasBookingConflict(bookingsResponse.content, roomId, requestedRange)
-      ) {
-        setMessage({
-          text: "Phòng đã có người đặt trong khoảng ngày này. Vui lòng chọn ngày khác.",
-          type: "error",
-        });
+      const validation = validateBookingBusinessRules(
+        roomData,
+        {
+          maNguoiDung: user.id,
+          maPhong: roomId,
+          ngayDen: values.ngayDen,
+          ngayDi: values.ngayDi,
+          soLuongKhach: values.soLuongKhach,
+        },
+        bookingsResponse.content,
+      );
+
+      if (!validation.isValid) {
+        const errorMsg = validation.message || "Dữ liệu đặt phòng không hợp lệ.";
+        setMessage({ text: errorMsg, type: "error" });
+        showToast(errorMsg, "error");
         return;
       }
 
       // Hợp lệ -> mở Popup xác nhận
       setPendingFormData(values);
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(error, "Không thể kiểm tra lịch phòng."),
-        type: "error",
-      });
+      const errorMsg = getApiErrorMessage(error, "Không thể kiểm tra lịch phòng.");
+      setMessage({ text: errorMsg, type: "error" });
+      showToast(errorMsg, "error");
     }
   };
 
   //==== BƯỚC 2: Thực hiện ĐẶT PHÒNG chính thức khi bấm nút trong Popup ====
+  // Kiểm tra lại toàn bộ dữ liệu ở bước này để chặn race-condition (2 khách đặt cùng lúc)
   const executeBooking = async () => {
     if (!pendingFormData || !user) return;
 
     setBookingLoading(true);
     try {
+      // Tải lại dữ liệu ngay trước thời điểm đặt để ngăn chặn Race Condition
+      const [freshRoom, bookingsResponse] = await Promise.all([
+        getRoomById(roomId).catch(() => null),
+        getBookings(),
+      ]);
+
+      const validation = validateBookingBusinessRules(
+        freshRoom,
+        {
+          maNguoiDung: user.id,
+          maPhong: roomId,
+          ngayDen: pendingFormData.ngayDen,
+          ngayDi: pendingFormData.ngayDi,
+          soLuongKhach: pendingFormData.soLuongKhach,
+        },
+        bookingsResponse.content,
+      );
+
+      if (!validation.isValid) {
+        const errorMsg = validation.message || "Không thể hoàn tất đặt phòng.";
+        setMessage({ text: errorMsg, type: "error" });
+        showToast(errorMsg, "error");
+        setPendingFormData(null);
+        return;
+      }
+
       const startIso = new Date(
         `${pendingFormData.ngayDen}T${checkInTime}:00`,
       ).toISOString();
@@ -222,10 +250,9 @@ const BookingCard = ({
       showToast("Đặt phòng thành công!", "success");
       setMobileOpen(false);
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(error, "Không thể đặt phòng."),
-        type: "error",
-      });
+      const errorMsg = getApiErrorMessage(error, "Không thể đặt phòng.");
+      setMessage({ text: errorMsg, type: "error" });
+      showToast(errorMsg, "error");
       setPendingFormData(null);
     } finally {
       setBookingLoading(false);

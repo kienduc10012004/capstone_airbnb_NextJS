@@ -21,10 +21,7 @@ import {
   type ApiBooking,
   type ApiRoom,
 } from "@/app/lib/api";
-import {
-  getStayDateRange,
-  hasBookingConflict,
-} from "@/app/lib/booking-availability";
+import { validateBookingBusinessRules } from "@/app/lib/booking-availability";
 import { formatDateForInput } from "@/app/lib/date";
 import { getImageSource } from "@/app/lib/image";
 import { bookingSchema } from "@/app/lib/schemas";
@@ -179,41 +176,28 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
       return;
     }
 
-    const requestedRange = getStayDateRange(
-      parsed.data.ngayDen,
-      parsed.data.ngayDi,
-    );
-    if (!requestedRange) {
-      setMessage({
-        text: "Ngày nhận và ngày trả phòng không hợp lệ.",
-        type: "error",
-      });
-      return;
-    }
-
     const room = roomMap.get(editing.maPhong);
-    if (room && parsed.data.soLuongKhach > room.khach) {
-      setMessage({
-        text: `Số lượng khách vượt quá sức chứa tối đa của phòng (${room.khach} khách).`,
-        type: "error",
-      });
-      return;
-    }
 
     setSaving(true);
     try {
       const allBookingsRes = await getBookings();
-      const otherBookings = allBookingsRes.content.filter(
-        (b) => b.id !== editing.id,
+      const validation = validateBookingBusinessRules(
+        room,
+        {
+          maNguoiDung: editing.maNguoiDung,
+          maPhong: editing.maPhong,
+          ngayDen: parsed.data.ngayDen,
+          ngayDi: parsed.data.ngayDi,
+          soLuongKhach: parsed.data.soLuongKhach,
+        },
+        allBookingsRes.content,
+        editing.id,
       );
 
-      if (
-        hasBookingConflict(otherBookings, editing.maPhong, requestedRange)
-      ) {
-        setMessage({
-          text: "Phòng đã có người đặt trong khoảng ngày này. Vui lòng chọn ngày khác.",
-          type: "error",
-        });
+      if (!validation.isValid) {
+        const errorMsg = validation.message || "Dữ liệu đặt phòng không hợp lệ.";
+        setMessage({ text: errorMsg, type: "error" });
+        showToast(errorMsg, "error");
         setSaving(false);
         return;
       }

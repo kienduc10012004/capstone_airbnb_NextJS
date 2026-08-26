@@ -24,10 +24,7 @@ import {
   type ApiUser,
 } from "@/app/lib/api";
 import { formatDateForInput } from "@/app/lib/date";
-import {
-  getStayDateRange,
-  hasBookingConflict,
-} from "@/app/lib/booking-availability";
+import { validateBookingBusinessRules } from "@/app/lib/booking-availability";
 import { bookingSchema } from "@/app/lib/schemas";
 import { uiClassNames } from "@/app/lib/styles";
 import { useToastStore } from "@/app/store/useToastStore";
@@ -128,24 +125,23 @@ export default function AdminBookingsPage() {
     }
 
     const targetRoomId = Number(formData.get("maPhong"));
-    const requestedRange = getStayDateRange(
-      parsed.data.ngayDen,
-      parsed.data.ngayDi,
+    const targetRoom = roomMap.get(targetRoomId);
+
+    const validation = validateBookingBusinessRules(
+      targetRoom,
+      {
+        maNguoiDung: editing.maNguoiDung,
+        maPhong: targetRoomId,
+        ngayDen: parsed.data.ngayDen,
+        ngayDi: parsed.data.ngayDi,
+        soLuongKhach: parsed.data.soLuongKhach,
+      },
+      bookings,
+      editing.id,
     );
 
-    if (!requestedRange) {
-      showToast("Khoảng ngày đặt phòng không hợp lệ.", "error");
-      return;
-    }
-
-    if (
-      hasBookingConflict(
-        bookings.filter((b) => b.id !== editing.id),
-        targetRoomId,
-        requestedRange,
-      )
-    ) {
-      showToast("Phòng đã có người đặt trong khoảng ngày được chọn.", "error");
+    if (!validation.isValid) {
+      showToast(validation.message || "Dữ liệu đặt phòng không hợp lệ.", "error");
       return;
     }
 
