@@ -44,7 +44,8 @@ export const getUsersPaged = async (params: PaginationParams = {}) => {
 };
 
 export const getUserById = async (id: number) => {
-  const { data } = await axiosClient.get<ApiEnvelope<ApiUser>>(`/users/${id}`);
+  const numericId = Number(id);
+  const { data } = await axiosClient.get<ApiEnvelope<ApiUser>>(`/users/${numericId}`);
   return data.content;
 };
 
@@ -77,16 +78,53 @@ export const createUser = async (payload: UserPayload) => {
 export const updateUser = async (id: number, payload: UserPayload) => {
   const safePayload = { ...payload };
   delete safePayload.password;
-  const { data } = await axiosClient.put<ApiEnvelope<ApiUser>>(`/users/${id}`, {
-    ...safePayload,
-    id,
-  });
-  return data;
+  const numericId = Number(id);
+
+  try {
+    const { data } = await axiosClient.put<ApiEnvelope<ApiUser>>(
+      `/users/${numericId}`,
+      {
+        ...safePayload,
+        id: numericId,
+      },
+    );
+    return data;
+  } catch (error: unknown) {
+    // Nếu backend báo người dùng không tồn tại hoặc 404, thử tìm ID mới nhất của tài khoản theo email
+    const axiosErr = error as { response?: { data?: { message?: string }; status?: number } };
+    if (
+      axiosErr?.response?.data?.message?.includes("không tồn tại") ||
+      axiosErr?.response?.status === 404
+    ) {
+      try {
+        const allUsers = await getUsers();
+        const matched = allUsers.content.find(
+          (u) =>
+            u.email.toLowerCase() === payload.email.toLowerCase() ||
+            (payload.phone && u.phone === payload.phone),
+        );
+        if (matched && matched.id !== numericId) {
+          const { data } = await axiosClient.put<ApiEnvelope<ApiUser>>(
+            `/users/${matched.id}`,
+            {
+              ...safePayload,
+              id: matched.id,
+            },
+          );
+          return data;
+        }
+      } catch {
+        // Giữ nguyên lỗi ban đầu
+      }
+    }
+    throw error;
+  }
 };
 
 export const deleteUser = async (id: number) => {
+  const numericId = Number(id);
   const { data } = await axiosClient.delete<ApiEnvelope<string>>("/users", {
-    params: { id },
+    params: { id: numericId },
   });
   return data;
 };

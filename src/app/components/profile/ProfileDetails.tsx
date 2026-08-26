@@ -93,22 +93,37 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
 
   const submit = async (values: ProfileFormData) => {
     setMessage(null);
+    const targetId = Number(user.id || initialUser.id);
     try {
-      const response = await updateUser(user.id, {
+      const response = await updateUser(targetId, {
         birthday: values.birthday,
         email: values.email,
         gender: values.gender === "true",
-        id: user.id,
+        id: targetId,
         name: values.name,
         phone: values.phone,
         role: user.role,
       });
-      syncUser(response.content);
+
+      const updatedUser = response?.content || {
+        ...user,
+        birthday: values.birthday,
+        email: values.email,
+        gender: values.gender === "true",
+        id: targetId,
+        name: values.name,
+        phone: values.phone,
+      };
+
+      syncUser(updatedUser);
+      setIsEditing(false);
       setMessage(null);
-      showToast("Đã cập nhật thông tin hồ sơ.", "success");
+      showToast("Đã cập nhật thông tin hồ sơ thành công.", "success");
     } catch (error) {
+      const errorMsg = getApiErrorMessage(error, "Không thể cập nhật hồ sơ.");
+      showToast(errorMsg, "error");
       setMessage({
-        text: getApiErrorMessage(error, "Không thể cập nhật hồ sơ."),
+        text: errorMsg,
         type: "error",
       });
     }
