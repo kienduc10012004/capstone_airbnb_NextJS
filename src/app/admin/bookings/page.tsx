@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import AdminPageHeader from "@/app/components/admin/AdminPageHeader";
+import AdminSearchBar from "@/app/components/admin/AdminSearchBar";
 import Button from "@/app/components/ui/Button";
 import DeleteConfirmDialog from "@/app/components/ui/DeleteConfirmDialog";
 import EmptyState from "@/app/components/ui/EmptyState";
@@ -10,7 +11,6 @@ import LoadingState from "@/app/components/ui/LoadingState";
 import LoadingOverlay from "@/app/components/ui/LoadingOverlay";
 import Modal from "@/app/components/ui/Modal";
 import Pagination from "@/app/components/ui/Pagination";
-import StatusMessage from "@/app/components/ui/StatusMessage";
 import {
   deleteBooking,
   getAllRooms,
@@ -40,7 +40,6 @@ export default function AdminBookingsPage() {
   const [rooms, setRooms] = useState<ApiRoom[]>([]);
   const [users, setUsers] = useState<ApiUser[]>([]);
   const [keyword, setKeyword] = useState("");
-  const [appliedKeyword, setAppliedKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -49,12 +48,7 @@ export default function AdminBookingsPage() {
     null,
   );
   const [editing, setEditing] = useState<ApiBooking | null>(null);
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "error" | "success";
-  } | null>(null);
 
-  //==== Tải dữ liệu đặt phòng: lấy lượt đặt cùng thông tin phòng và người dùng liên quan ====
   const loadBookings = async () => {
     const response = await getBookings();
     setBookings(response.content);
@@ -71,10 +65,7 @@ export default function AdminBookingsPage() {
       })
       .catch(() => {
         if (active) {
-          setMessage({
-            text: "Không thể tải dữ liệu đặt phòng.",
-            type: "error",
-          });
+          showToast("Không thể tải dữ liệu đặt phòng.", "error");
         }
       })
       .finally(() => {
@@ -83,7 +74,7 @@ export default function AdminBookingsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [showToast]);
 
   const roomMap = useMemo(
     () => new Map(rooms.map((room) => [room.id, room])),
@@ -93,7 +84,8 @@ export default function AdminBookingsPage() {
     () => new Map(users.map((user) => [user.id, user])),
     [users],
   );
-  const normalizedKeyword = appliedKeyword.trim().toLowerCase();
+
+  const normalizedKeyword = keyword.trim().toLowerCase();
   const filteredBookings = bookings.filter((booking) => {
     if (!normalizedKeyword) return true;
     const roomName = roomMap.get(booking.maPhong)?.tenPhong ?? "";
@@ -102,6 +94,7 @@ export default function AdminBookingsPage() {
       (value) => value?.toLowerCase().includes(normalizedKeyword),
     );
   });
+
   const totalPages = Math.max(
     Math.ceil(filteredBookings.length / PAGE_SIZE),
     1,
@@ -112,27 +105,11 @@ export default function AdminBookingsPage() {
     safeCurrentPage * PAGE_SIZE,
   );
 
-  //==== Lọc và chỉnh sửa đặt phòng: xử lý tìm kiếm, mở form và lưu lịch mới ====
-  const search = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setAppliedKeyword(keyword.trim());
-    setCurrentPage(1);
-  };
-
-  const clearFilter = () => {
-    setKeyword("");
-    setAppliedKeyword("");
-    setCurrentPage(1);
-  };
-
   const openEdit = async (id: number) => {
     try {
       setEditing(await getBookingById(id));
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(error, "Không thể tải chi tiết đặt phòng."),
-        type: "error",
-      });
+      showToast(getApiErrorMessage(error, "Không thể tải chi tiết đặt phòng."), "error");
     }
   };
 
@@ -146,10 +123,7 @@ export default function AdminBookingsPage() {
       soLuongKhach: Number(formData.get("soLuongKhach")),
     });
     if (!parsed.success) {
-      setMessage({
-        text: parsed.error.issues[0]?.message || "Thông tin chưa hợp lệ.",
-        type: "error",
-      });
+      showToast(parsed.error.issues[0]?.message || "Thông tin chưa hợp lệ.", "error");
       return;
     }
 
@@ -160,37 +134,26 @@ export default function AdminBookingsPage() {
     );
 
     if (!requestedRange) {
-      setMessage({
-        text: "Ngày nhận và ngày trả phòng không hợp lệ.",
-        type: "error",
-      });
+      showToast("Khoảng ngày đặt phòng không hợp lệ.", "error");
       return;
     }
 
-    const room = roomMap.get(targetRoomId);
-    if (room && parsed.data.soLuongKhach > room.khach) {
-      setMessage({
-        text: `Số lượng khách vượt quá sức chứa tối đa của phòng (${room.khach} khách).`,
-        type: "error",
-      });
+    if (
+      hasBookingConflict(
+        bookings.filter((b) => b.id !== editing.id),
+        targetRoomId,
+        requestedRange,
+      )
+    ) {
+      showToast("Phòng đã có người đặt trong khoảng ngày được chọn.", "error");
       return;
     }
 
     setSaving(true);
     try {
-      const otherBookings = bookings.filter((b) => b.id !== editing.id);
-      if (hasBookingConflict(otherBookings, targetRoomId, requestedRange)) {
-        setMessage({
-          text: "Phòng đã có lượt đặt trùng khoảng thời gian này.",
-          type: "error",
-        });
-        setSaving(false);
-        return;
-      }
-
       await updateBooking(editing.id, {
-        ...editing,
-        maNguoiDung: Number(formData.get("maNguoiDung")),
+        id: editing.id,
+        maNguoiDung: editing.maNguoiDung,
         maPhong: targetRoomId,
         ngayDen: new Date(parsed.data.ngayDen).toISOString(),
         ngayDi: new Date(parsed.data.ngayDi).toISOString(),
@@ -198,19 +161,14 @@ export default function AdminBookingsPage() {
       });
       await loadBookings();
       setEditing(null);
-      setMessage(null);
-      showToast("Đã cập nhật đặt phòng.", "success");
+      showToast("Đã cập nhật đặt phòng thành công.", "success");
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(error, "Không thể cập nhật đặt phòng."),
-        type: "error",
-      });
+      showToast(getApiErrorMessage(error, "Không thể cập nhật đặt phòng."), "error");
     } finally {
       setSaving(false);
     }
   };
 
-  //==== Hủy đặt phòng: xóa lượt đặt sau khi quản trị viên xác nhận ====
   const confirmRemove = async () => {
     if (!deletingBooking) return;
 
@@ -220,53 +178,32 @@ export default function AdminBookingsPage() {
       setBookings((current) =>
         current.filter((item) => item.id !== deletingBooking.id),
       );
-      setMessage(null);
-      showToast("Đã hủy đặt phòng.", "success");
+      showToast(`Đã hủy đặt phòng #${deletingBooking.id} thành công.`, "success");
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(error, "Không thể hủy đặt phòng."),
-        type: "error",
-      });
+      showToast(getApiErrorMessage(error, "Không thể hủy đặt phòng."), "error");
     } finally {
       setDeleting(false);
       setDeletingBooking(null);
     }
   };
 
-  //==== Giao diện quản lý đặt phòng: hiển thị bảng, phân trang và hộp thoại thao tác ====
   return (
-    <div>
+    <div className="space-y-6">
       <AdminPageHeader
         description="Theo dõi, cập nhật lịch và hủy các lượt đặt trong hệ thống."
         title="Quản lý đặt phòng"
       />
-      <form
-        className={`${uiClassNames.surface} mt-6 grid grid-cols-2 gap-2 p-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]`}
-        onSubmit={search}
-      >
-        <input
-          className={`${uiClassNames.field} col-span-2 sm:col-span-1`}
-          placeholder="Tìm theo mã, người dùng hoặc tên phòng"
-          value={keyword}
-          onChange={(event) => setKeyword(event.target.value)}
-        />
-        <Button className="w-full whitespace-nowrap" type="submit">
-          Tìm
-        </Button>
-        <Button
-          className="w-full whitespace-nowrap"
-          disabled={!keyword && !appliedKeyword}
-          variant="secondary"
-          onClick={clearFilter}
-        >
-          Xóa lọc
-        </Button>
-      </form>
-      {message && (
-        <div className="mt-5">
-          <StatusMessage message={message.text} type={message.type} />
-        </div>
-      )}
+
+      {/* Thanh tìm kiếm Debouncing */}
+      <AdminSearchBar
+        placeholder="Tìm kiếm theo mã đặt phòng, khách hàng hoặc tên phòng..."
+        value={keyword}
+        onChange={(val) => {
+          setKeyword(val);
+          setCurrentPage(1);
+        }}
+      />
+
       {loading && paginatedBookings.length === 0 ? (
         <LoadingState label="Đang tải đặt phòng..." variant="table" />
       ) : paginatedBookings.length === 0 ? (
@@ -279,12 +216,12 @@ export default function AdminBookingsPage() {
       ) : (
         <>
           <div
-            className={`${uiClassNames.surface} relative mt-6 w-full max-w-[calc(100vw-2rem)] overflow-hidden sm:max-w-[calc(100vw-3rem)] lg:max-w-[calc(100vw-314px)]`}
+            className={`${uiClassNames.adminCard} relative mt-6 w-full max-w-[calc(100vw-2rem)] overflow-hidden sm:max-w-[calc(100vw-3rem)] lg:max-w-[calc(100vw-330px)]`}
           >
             {loading && <LoadingOverlay label="Đang cập nhật đặt phòng..." />}
             <div className="max-w-full overflow-x-auto overscroll-x-contain">
               <table className="w-full min-w-[920px] text-left text-sm whitespace-nowrap">
-                <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+                <thead className={uiClassNames.adminTableHead}>
                   <tr>
                     <th className="px-5 py-4">Mã</th>
                     <th className="px-5 py-4">Khách hàng</th>
@@ -294,51 +231,55 @@ export default function AdminBookingsPage() {
                     <th className="px-5 py-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                   {paginatedBookings.map((booking) => {
                     const user = userMap.get(booking.maNguoiDung);
                     return (
                       <tr
-                        className="transition-colors duration-300 ease-out hover:bg-gray-50"
+                        className={uiClassNames.adminTableRow}
                         key={booking.id}
                       >
-                        <td className="px-5 py-4 text-gray-500">
+                        <td className="px-5 py-4 font-mono text-xs text-gray-400 dark:text-slate-500">
                           #{booking.id}
                         </td>
                         <td className="px-5 py-4">
-                          <p className="font-semibold">
+                          <p className="font-semibold text-gray-900 dark:text-white">
                             {user?.name || `User #${booking.maNguoiDung}`}
                           </p>
-                          <p className="mt-1 text-xs text-gray-500">
-                            {user?.email || "—"}
+                          <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500">
+                            {user?.email || "Chưa có email"}
                           </p>
                         </td>
-                        <td className="max-w-65 truncate px-5 py-4">
+                        <td className="px-5 py-4 text-gray-700 dark:text-slate-200 max-w-64 truncate">
                           {roomMap.get(booking.maPhong)?.tenPhong ||
                             `Phòng #${booking.maPhong}`}
                         </td>
-                        <td className="px-5 py-4 text-gray-600">
+                        <td className="px-5 py-4 text-xs font-semibold text-gray-600 dark:text-slate-300">
                           {new Date(booking.ngayDen).toLocaleDateString(
                             "vi-VN",
-                          )}
-                          <span className="mx-1">→</span>
+                          )}{" "}
+                          →{" "}
                           {new Date(booking.ngayDi).toLocaleDateString("vi-VN")}
                         </td>
-                        <td className="px-5 py-4">{booking.soLuongKhach}</td>
+                        <td className="px-5 py-4 font-medium text-gray-800 dark:text-slate-200">
+                          {booking.soLuongKhach} khách
+                        </td>
                         <td className="px-5 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <Button
+                              className="min-w-[68px] text-xs font-bold py-1.5 justify-center"
                               variant="edit"
-                              onClick={() => openEdit(booking.id)}
+                              onClick={() => void openEdit(booking.id)}
                             >
                               <i className="fa-solid fa-pen-to-square" />
                               Sửa
                             </Button>
                             <Button
+                              className="min-w-[68px] text-xs font-bold py-1.5 justify-center"
                               variant="delete"
                               onClick={() => setDeletingBooking(booking)}
                             >
-                              <i className="fa-solid fa-ban" />
+                              <i className="fa-solid fa-trash" />
                               Hủy
                             </Button>
                           </div>
@@ -351,7 +292,6 @@ export default function AdminBookingsPage() {
             </div>
           </div>
           <Pagination
-            ariaLabel="Phân trang đặt phòng"
             currentPage={safeCurrentPage}
             totalPages={totalPages}
             onChange={setCurrentPage}
@@ -359,31 +299,18 @@ export default function AdminBookingsPage() {
         </>
       )}
 
+      {/* Modal Sửa đặt phòng */}
       <Modal
         open={Boolean(editing)}
         title="Cập nhật đặt phòng"
         onClose={() => setEditing(null)}
       >
         {editing && (
-          <form className="space-y-4" onSubmit={submit}>
-            <label className="block text-sm font-medium">
-              Người dùng
-              <select
-                className={`${uiClassNames.field} mt-1.5`}
-                defaultValue={editing.maNguoiDung}
-                name="maNguoiDung"
-              >
-                {users.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.name} ({user.email})
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="block text-sm font-medium">
+          <form className="space-y-4" onSubmit={(e) => void submit(e)}>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200">
               Phòng
               <select
-                className={`${uiClassNames.field} mt-1.5`}
+                className={`${uiClassNames.field} mt-1.5 cursor-pointer`}
                 defaultValue={editing.maPhong}
                 name="maPhong"
               >
@@ -394,28 +321,28 @@ export default function AdminBookingsPage() {
                 ))}
               </select>
             </label>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="text-sm font-medium">
-                Ngày nhận
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                Ngày nhận phòng
                 <input
-                  className={`${uiClassNames.field} mt-1.5`}
+                  className={`${uiClassNames.field} mt-1.5 [color-scheme:light_dark]`}
                   defaultValue={formatDateForInput(editing.ngayDen)}
                   name="ngayDen"
                   type="date"
                 />
               </label>
-              <label className="text-sm font-medium">
-                Ngày trả
+              <label className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                Ngày trả phòng
                 <input
-                  className={`${uiClassNames.field} mt-1.5`}
+                  className={`${uiClassNames.field} mt-1.5 [color-scheme:light_dark]`}
                   defaultValue={formatDateForInput(editing.ngayDi)}
                   name="ngayDi"
                   type="date"
                 />
               </label>
             </div>
-            <label className="block text-sm font-medium">
-              Số khách
+            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200">
+              Số lượng khách
               <input
                 className={`${uiClassNames.field} mt-1.5`}
                 defaultValue={editing.soLuongKhach}
@@ -424,20 +351,27 @@ export default function AdminBookingsPage() {
                 type="number"
               />
             </label>
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-white/10">
               <Button variant="secondary" onClick={() => setEditing(null)}>
-                Đóng
+                Hủy
               </Button>
-              <Button loading={saving} type="submit" variant="edit">
+              <Button
+                className="font-bold shadow-md"
+                loading={saving}
+                type="submit"
+                variant="create"
+              >
                 Lưu thay đổi
               </Button>
             </div>
           </form>
         )}
       </Modal>
+
+      {/* Xác nhận hủy đặt phòng có đếm ngược 5 giây */}
       <DeleteConfirmDialog
-        confirmLabel="Hủy đặt phòng"
-        description={`Lượt đặt phòng #${deletingBooking?.id ?? ""} sẽ bị hủy khỏi hệ thống. Hành động này không thể hoàn tác.`}
+        countdownSeconds={5}
+        description={`Đặt phòng #${deletingBooking?.id ?? ""} sẽ bị hủy khỏi hệ thống. Vui lòng chờ 5 giây để xác nhận thao tác.`}
         loading={deleting}
         open={Boolean(deletingBooking)}
         title="Xác nhận hủy đặt phòng"

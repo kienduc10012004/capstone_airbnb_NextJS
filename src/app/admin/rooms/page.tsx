@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import AdminPageHeader from "@/app/components/admin/AdminPageHeader";
+import AdminSearchBar from "@/app/components/admin/AdminSearchBar";
+import DualImagePicker from "@/app/components/admin/DualImagePicker";
 import Button from "@/app/components/ui/Button";
 import DeleteConfirmDialog from "@/app/components/ui/DeleteConfirmDialog";
 import EmptyState from "@/app/components/ui/EmptyState";
@@ -13,7 +15,6 @@ import LoadingState from "@/app/components/ui/LoadingState";
 import LoadingOverlay from "@/app/components/ui/LoadingOverlay";
 import Modal from "@/app/components/ui/Modal";
 import Pagination from "@/app/components/ui/Pagination";
-import StatusMessage from "@/app/components/ui/StatusMessage";
 import {
   createRoom,
   deleteRoom,
@@ -27,7 +28,7 @@ import {
 } from "@/app/lib/api";
 import { uiClassNames } from "@/app/lib/styles";
 import { roomSchema, type RoomFormData } from "@/app/lib/schemas";
-import { getImageSource, getImageValidationMessage } from "@/app/lib/image";
+import { getImageSource } from "@/app/lib/image";
 import { useToastStore } from "@/app/store/useToastStore";
 
 const PAGE_SIZE = 12;
@@ -79,21 +80,18 @@ export default function AdminRoomsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "error" | "success";
-  } | null>(null);
+
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
     register,
     reset,
+    setValue,
   } = useForm<RoomFormData>({
     resolver: zodResolver(roomSchema),
     defaultValues: emptyRoom,
   });
 
-  //==== Tải danh sách phòng: đồng bộ phân trang và ngăn response cũ ghi đè dữ liệu mới ====
   const loadRooms = async (page: number, searchKeyword = keyword) => {
     const requestId = ++latestRequestId.current;
     setLoading(true);
@@ -105,10 +103,7 @@ export default function AdminRoomsPage() {
       setCurrentPage(page);
     } catch (error) {
       if (requestId !== latestRequestId.current) return;
-      setMessage({
-        text: getApiErrorMessage(error, "Không thể tải danh sách phòng."),
-        type: "error",
-      });
+      showToast(getApiErrorMessage(error, "Không thể tải danh sách phòng."), "error");
     } finally {
       if (requestId === latestRequestId.current) setLoading(false);
     }
@@ -117,7 +112,10 @@ export default function AdminRoomsPage() {
   useEffect(() => {
     let active = true;
     const requestId = ++latestRequestId.current;
-    Promise.all([getRooms(1, PAGE_SIZE), getLocations()])
+    Promise.all([
+      getRooms(1, PAGE_SIZE),
+      getLocations(),
+    ])
       .then(([roomsResponse, locationsResponse]) => {
         if (!active || requestId !== latestRequestId.current) return;
         setRooms(roomsResponse.content.data);
@@ -126,10 +124,7 @@ export default function AdminRoomsPage() {
       })
       .catch(() => {
         if (active && requestId === latestRequestId.current) {
-          setMessage({
-            text: "Không thể tải dữ liệu quản lý phòng.",
-            type: "error",
-          });
+          showToast("Không thể tải dữ liệu phòng.", "error");
         }
       })
       .finally(() => {
@@ -138,9 +133,17 @@ export default function AdminRoomsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [showToast]);
 
-  //==== Biểu mẫu phòng: quản lý chế độ thêm, sửa và ảnh minh họa ====
+  const locationMap = new Map(
+    locations.map((location) => [location.id, location]),
+  );
+
+  const handleSearchChange = (val: string) => {
+    setKeyword(val);
+    void loadRooms(1, val);
+  };
+
   const openCreate = () => {
     setEditing(null);
     setImageFile(null);
@@ -152,130 +155,113 @@ export default function AdminRoomsPage() {
   const openEdit = (room: ApiRoom) => {
     setEditing(room);
     setImageFile(null);
-    setImagePreview(room.hinhAnh);
-    reset(room);
+    setImagePreview(room.hinhAnh || "");
+    reset({
+      banLa: room.banLa,
+      banUi: room.banUi,
+      bep: room.bep,
+      dieuHoa: room.dieuHoa,
+      doXe: room.doXe,
+      giaTien: room.giaTien,
+      giuong: room.giuong,
+      hinhAnh: room.hinhAnh || "",
+      hoBoi: room.hoBoi,
+      khach: room.khach,
+      maViTri: room.maViTri,
+      mayGiat: room.mayGiat,
+      moTa: room.moTa,
+      phongNgu: room.phongNgu,
+      phongTam: room.phongTam,
+      tenPhong: room.tenPhong,
+      tivi: room.tivi,
+      wifi: room.wifi,
+    });
     setModalOpen(true);
   };
 
-  const chooseImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    if (!file) return;
-    const validationMessage = getImageValidationMessage(file);
-    if (validationMessage) {
-      event.target.value = "";
-      setImageFile(null);
-      setMessage({ text: validationMessage, type: "error" });
-      return;
-    }
-    setMessage(null);
+  const handleFileSelect = (file: File | null, preview: string) => {
     setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(String(reader.result));
-    reader.readAsDataURL(file);
+    setImagePreview(preview);
+    setValue("hinhAnh", preview);
+  };
+
+  const handleUrlChange = (url: string) => {
+    setImageFile(null);
+    setImagePreview(url);
+    setValue("hinhAnh", url);
   };
 
   const submit = async (values: RoomFormData) => {
     try {
-      const payload = {
-        ...values,
-        hinhAnh: values.hinhAnh || editing?.hinhAnh || "",
-      };
-      const response = editing
-        ? await updateRoom(editing.id, payload)
-        : await createRoom({ ...payload, id: 0 });
-      const savedId = editing?.id ?? response.content.id;
-      if (imageFile && savedId) {
-        await uploadRoomImage(savedId, imageFile);
+      let savedRoomId = editing?.id;
+      const effectiveImage = imagePreview || values.hinhAnh || "";
+
+      if (editing) {
+        await updateRoom(editing.id, {
+          ...values,
+          hinhAnh: effectiveImage,
+          id: editing.id,
+        });
+        showToast("Đã cập nhật phòng thành công.", "success");
+      } else {
+        const response = await createRoom({
+          ...values,
+          hinhAnh: effectiveImage,
+        });
+        savedRoomId = response.content.id;
+        showToast("Đã thêm phòng mới thành công.", "success");
       }
+
+      if (imageFile && savedRoomId) {
+        await uploadRoomImage(savedRoomId, imageFile);
+      }
+
       setModalOpen(false);
-      setMessage(null);
-      showToast(editing ? "Đã cập nhật phòng." : "Đã thêm phòng.", "success");
       await loadRooms(currentPage);
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(error, "Không thể lưu phòng."),
-        type: "error",
-      });
+      showToast(getApiErrorMessage(error, "Không thể lưu thông tin phòng."), "error");
     }
   };
 
-  //==== Xóa phòng: thực thi yêu cầu sau bước xác nhận và tải lại danh sách ====
   const confirmRemove = async () => {
     if (!deletingRoom) return;
-
     setDeleting(true);
     try {
       await deleteRoom(deletingRoom.id);
-      setMessage(null);
-      showToast("Đã xóa phòng.", "success");
+      showToast(`Đã xóa phòng "${deletingRoom.tenPhong}" thành công.`, "success");
       await loadRooms(currentPage);
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(
-          error,
-          "Không thể xóa phòng. Hãy kiểm tra các lượt đặt liên quan.",
-        ),
-        type: "error",
-      });
+      showToast(getApiErrorMessage(error, "Không thể xóa phòng."), "error");
     } finally {
       setDeleting(false);
       setDeletingRoom(null);
     }
   };
 
-  const locationMap = new Map(
-    locations.map((location) => [location.id, location]),
-  );
-
-  //==== Giao diện quản lý phòng: hiển thị bộ lọc, bảng dữ liệu và biểu mẫu chỉnh sửa ====
   return (
-    <div>
+    <div className="space-y-6">
       <AdminPageHeader
         action={
           <Button
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto font-bold shadow-md"
             variant="create"
             onClick={openCreate}
           >
-            + Thêm phòng
+            <i className="fa-solid fa-plus-circle mr-1" />
+            Thêm phòng
           </Button>
         }
-        description="Quản lý thông tin, tiện nghi, giá và hình ảnh phòng thuê."
+        description="Quản lý danh sách phòng thuê, tiện nghi và giá niêm yết."
         title="Quản lý phòng thuê"
       />
-      <form
-        className={`${uiClassNames.surface} mt-6 grid grid-cols-2 gap-2 p-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]`}
-        onSubmit={(event) => {
-          event.preventDefault();
-          void loadRooms(1);
-        }}
-      >
-        <input
-          className={`${uiClassNames.field} col-span-2 sm:col-span-1`}
-          placeholder="Tìm theo tên phòng"
-          value={keyword}
-          onChange={(event) => setKeyword(event.target.value)}
-        />
-        <Button className="w-full whitespace-nowrap" type="submit">
-          Tìm
-        </Button>
-        <Button
-          className="w-full whitespace-nowrap"
-          disabled={!keyword}
-          variant="secondary"
-          onClick={() => {
-            setKeyword("");
-            void loadRooms(1, "");
-          }}
-        >
-          Xóa lọc
-        </Button>
-      </form>
-      {message && (
-        <div className="mt-5">
-          <StatusMessage message={message.text} type={message.type} />
-        </div>
-      )}
+
+      {/* Thanh tìm kiếm Debouncing */}
+      <AdminSearchBar
+        placeholder="Tìm kiếm theo tên phòng..."
+        value={keyword}
+        onChange={handleSearchChange}
+      />
+
       {loading && rooms.length === 0 ? (
         <LoadingState label="Đang tải phòng..." variant="table" />
       ) : rooms.length === 0 ? (
@@ -288,12 +274,12 @@ export default function AdminRoomsPage() {
       ) : (
         <>
           <div
-            className={`${uiClassNames.surface} relative mt-6 w-full max-w-[calc(100vw-2rem)] overflow-hidden sm:max-w-[calc(100vw-3rem)] lg:max-w-[calc(100vw-314px)]`}
+            className={`${uiClassNames.adminCard} relative mt-6 w-full max-w-[calc(100vw-2rem)] overflow-hidden sm:max-w-[calc(100vw-3rem)] lg:max-w-[calc(100vw-330px)]`}
           >
             {loading && <LoadingOverlay label="Đang cập nhật phòng..." />}
             <div className="max-w-full overflow-x-auto overscroll-x-contain">
               <table className="w-full min-w-[900px] text-left text-sm whitespace-nowrap">
-                <thead className="border-b border-gray-200 bg-gray-50 text-xs uppercase text-gray-500">
+                <thead className={uiClassNames.adminTableHead}>
                   <tr>
                     <th className="px-5 py-4">Phòng</th>
                     <th className="px-5 py-4">Vị trí</th>
@@ -302,15 +288,15 @@ export default function AdminRoomsPage() {
                     <th className="px-5 py-4 text-right">Thao tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-white/5">
                   {rooms.map((room) => (
                     <tr
-                      className="transition-colors duration-300 ease-out hover:bg-gray-50"
+                      className={uiClassNames.adminTableRow}
                       key={room.id}
                     >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="relative h-12 w-16 overflow-hidden rounded-lg bg-gray-100">
+                          <div className="relative h-12 w-16 overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
                             {getImageSource(room.hinhAnh) && (
                               <Image
                                 fill
@@ -322,30 +308,37 @@ export default function AdminRoomsPage() {
                             )}
                           </div>
                           <div>
-                            <p className="max-w-75 truncate font-semibold">
+                            <p className="max-w-72 truncate font-semibold text-gray-900 dark:text-white">
                               {room.tenPhong}
                             </p>
-                            <p className="mt-1 text-xs text-gray-400">
+                            <p className="mt-0.5 text-xs text-gray-400 dark:text-slate-500 font-mono">
                               #{room.id}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-4 text-gray-600">
+                      <td className="px-5 py-4 text-gray-600 dark:text-slate-300">
                         {locationMap.get(room.maViTri)?.tenViTri ||
                           `#${room.maViTri}`}
                       </td>
-                      <td className="px-5 py-4">{room.khach} khách</td>
-                      <td className="px-5 py-4 font-semibold">
+                      <td className="px-5 py-4 font-medium text-gray-800 dark:text-slate-200">
+                        {room.khach} khách
+                      </td>
+                      <td className="px-5 py-4 font-bold text-gray-900 dark:text-white">
                         ${room.giaTien}
                       </td>
                       <td className="px-5 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button variant="edit" onClick={() => openEdit(room)}>
+                          <Button
+                            className="min-w-[68px] text-xs font-bold py-1.5 justify-center"
+                            variant="edit"
+                            onClick={() => openEdit(room)}
+                          >
                             <i className="fa-solid fa-pen-to-square" />
                             Sửa
                           </Button>
                           <Button
+                            className="min-w-[68px] text-xs font-bold py-1.5 justify-center"
                             variant="delete"
                             onClick={() => setDeletingRoom(room)}
                           >
@@ -368,6 +361,7 @@ export default function AdminRoomsPage() {
         </>
       )}
 
+      {/* Modal Thêm / Sửa phòng */}
       <Modal
         open={modalOpen}
         size="xl"
@@ -380,22 +374,24 @@ export default function AdminRoomsPage() {
         >
           <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">
             <div className="space-y-4">
-              <label className="block text-sm font-medium">
-                Tên phòng
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200">
+                Tên phòng <span className="text-rose-500">*</span>
                 <input
                   className={`${uiClassNames.field} mt-1.5`}
+                  placeholder="VD: Căn hộ cao cấp view biển"
                   {...register("tenPhong")}
                 />
                 {errors.tenPhong && (
-                  <span className="text-xs text-red-500">
+                  <span className="block mt-1 text-xs font-semibold text-red-500">
                     {errors.tenPhong.message}
                   </span>
                 )}
               </label>
-              <label className="block text-sm font-medium">
-                Mô tả
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200">
+                Mô tả <span className="text-rose-500">*</span>
                 <textarea
                   className={`${uiClassNames.field} mt-1.5 min-h-28`}
+                  placeholder="Mô tả chi tiết phòng..."
                   {...register("moTa")}
                 />
               </label>
@@ -405,9 +401,9 @@ export default function AdminRoomsPage() {
                   ["phongNgu", "Phòng ngủ"],
                   ["giuong", "Giường"],
                   ["phongTam", "Phòng tắm"],
-                  ["giaTien", "Giá / đêm"],
+                  ["giaTien", "Giá / đêm ($)"],
                 ].map(([field, label]) => (
-                  <label className="text-sm font-medium" key={field}>
+                  <label className="text-sm font-semibold text-gray-700 dark:text-slate-200" key={field}>
                     {label}
                     <input
                       className={`${uiClassNames.field} mt-1.5`}
@@ -419,10 +415,10 @@ export default function AdminRoomsPage() {
                     />
                   </label>
                 ))}
-                <label className="text-sm font-medium">
-                  Vị trí
+                <label className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+                  Vị trí <span className="text-rose-500">*</span>
                   <select
-                    className={`${uiClassNames.field} mt-1.5`}
+                    className={`${uiClassNames.field} mt-1.5 cursor-pointer`}
                     {...register("maViTri", { valueAsNumber: true })}
                   >
                     <option value="0">Chọn vị trí</option>
@@ -435,76 +431,62 @@ export default function AdminRoomsPage() {
                 </label>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium">
-                URL hình hiện tại
-                <input
-                  className={`${uiClassNames.field} mt-1.5`}
-                  {...register("hinhAnh")}
-                />
-              </label>
-              <label className="mt-4 block text-sm font-medium">
-                Tải hình mới
-                <input
-                  accept="image/*"
-                  className={`${uiClassNames.field} mt-1.5`}
-                  type="file"
-                  onChange={chooseImage}
-                />
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Chọn hình JPG hoặc PNG có dung lượng dưới 1MB.
-                </p>
-              </label>
-              <div className="relative mt-4 aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100">
-                {imagePreview ? (
-                  <Image
-                    fill
-                    unoptimized={imagePreview.startsWith("data:")}
-                    alt="Xem trước phòng"
-                    className="object-cover"
-                    src={imagePreview}
-                  />
-                ) : (
-                  <div className="grid h-full place-items-center text-sm text-gray-400">
-                    Chưa có hình xem trước
-                  </div>
-                )}
+
+            <div className="space-y-4">
+              {/* Chọn 2 kiểu ảnh cho phòng */}
+              <DualImagePicker
+                previewUrl={imagePreview}
+                onError={(msg) => showToast(msg, "error")}
+                onFileSelect={handleFileSelect}
+                onUrlChange={handleUrlChange}
+              />
+
+              <div>
+                <span className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
+                  Tiện nghi phòng
+                </span>
+                <div className="grid grid-cols-2 gap-2 rounded-2xl border border-gray-200 dark:border-white/10 p-3 bg-gray-50/50 dark:bg-slate-800/50">
+                  {amenityFields.map(([field, label]) => (
+                    <label
+                      className="flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-slate-300 cursor-pointer"
+                      key={field}
+                    >
+                      <input
+                        className="h-4 w-4 rounded text-rose-600 focus:ring-rose-500 cursor-pointer"
+                        type="checkbox"
+                        {...register(field)}
+                      />
+                      {label}
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
-          <fieldset>
-            <legend className="text-sm font-semibold">Tiện nghi</legend>
-            <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-              {amenityFields.map(([field, label]) => (
-                <label
-                  className="flex items-center gap-2 rounded-xl border border-gray-200 p-3 text-sm"
-                  key={field}
-                >
-                  <input type="checkbox" {...register(field)} />
-                  {label}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-          <div className="flex justify-end gap-2">
+
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-white/10">
             <Button variant="secondary" onClick={() => setModalOpen(false)}>
               Hủy
             </Button>
             <Button
+              className="font-bold shadow-md"
               loading={isSubmitting}
               type="submit"
               variant={editing ? "edit" : "create"}
             >
-              Lưu phòng
+              {editing ? "Cập nhật phòng" : "Lưu phòng"}
             </Button>
           </div>
         </form>
       </Modal>
+
+      {/* Xác nhận xóa phòng có đếm ngược 5 giây */}
       <DeleteConfirmDialog
-        description={`Phòng "${deletingRoom?.tenPhong ?? ""}" sẽ bị xóa. Hãy bảo đảm phòng không còn lượt đặt liên quan.`}
+        countdownSeconds={5}
+        description={`Phòng "${deletingRoom?.tenPhong ?? ""}" sẽ bị xóa khỏi hệ thống. Vui lòng chờ 5 giây để xác nhận thao tác.`}
         loading={deleting}
         open={Boolean(deletingRoom)}
-        title="Xóa phòng thuê"
+        title="Xác nhận xóa phòng"
         onCancel={() => setDeletingRoom(null)}
         onConfirm={() => void confirmRemove()}
       />

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import AdminMobileMenu from "@/app/components/admin/AdminMobileMenu";
+import UserMenuAvatar from "@/app/components/auth/UserMenuAvatar";
 import LoadingState from "@/app/components/ui/LoadingState";
 import ThemeToggle from "@/app/components/ui/ThemeToggle";
 import { useAuthStore } from "@/app/store/useAuthStore";
@@ -127,13 +128,11 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           </button>
         </div>
 
-        {/* Admin info box */}
-        <div className="hidden lg:block mx-4 mb-4 rounded-2xl bg-white/[0.05] border border-white/[0.08] p-4">
+        {/* Admin info box với hình đại diện người dùng */}
+        <div className="hidden lg:block mx-4 mb-4 rounded-2xl bg-white/[0.05] border border-white/[0.08] p-3.5">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 text-white text-sm font-bold shadow-md">
-              {user.name?.[0]?.toUpperCase() ?? "A"}
-            </div>
-            <div className="min-w-0">
+            <UserMenuAvatar avatar={user.avatar} name={user.name || "Admin"} />
+            <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold text-white">{user.name}</p>
               <p className="truncate text-xs text-gray-400">{user.email}</p>
             </div>
@@ -157,9 +156,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 : pathname.startsWith(item.href);
             return (
               <Link
-                className={`flex min-w-fit items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200 ${
+                className={`flex min-w-fit items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors duration-150 ${
                   active
-                    ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/25"
+                    ? "bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-md shadow-rose-500/20"
                     : "text-gray-400 hover:bg-white/[0.07] hover:text-white"
                 }`}
                 href={item.href}
@@ -221,9 +220,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Hệ thống hoạt động
             </div>
-            <div className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 text-white text-xs font-bold shadow-sm">
-              {user.name?.[0]?.toUpperCase() ?? "A"}
-            </div>
+            <UserMenuAvatar avatar={user.avatar} name={user.name || "Admin"} />
           </div>
         </header>
 

@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import AdminPageHeader from "@/app/components/admin/AdminPageHeader";
+import AdminSearchBar from "@/app/components/admin/AdminSearchBar";
+import DualImagePicker from "@/app/components/admin/DualImagePicker";
 import Button from "@/app/components/ui/Button";
 import DeleteConfirmDialog from "@/app/components/ui/DeleteConfirmDialog";
 import EmptyState from "@/app/components/ui/EmptyState";
@@ -13,7 +15,6 @@ import LoadingState from "@/app/components/ui/LoadingState";
 import LoadingOverlay from "@/app/components/ui/LoadingOverlay";
 import Modal from "@/app/components/ui/Modal";
 import Pagination from "@/app/components/ui/Pagination";
-import StatusMessage from "@/app/components/ui/StatusMessage";
 import {
   createLocation,
   deleteLocation,
@@ -25,7 +26,7 @@ import {
 } from "@/app/lib/api";
 import { locationSchema, type LocationFormData } from "@/app/lib/schemas";
 import { uiClassNames } from "@/app/lib/styles";
-import { getImageSource, getImageValidationMessage } from "@/app/lib/image";
+import { getImageSource } from "@/app/lib/image";
 import { useToastStore } from "@/app/store/useToastStore";
 
 const PAGE_SIZE = 12;
@@ -52,21 +53,18 @@ export default function AdminLocationsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "error" | "success";
-  } | null>(null);
+
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
     register,
     reset,
+    setValue,
   } = useForm<LocationFormData>({
     resolver: zodResolver(locationSchema),
     defaultValues: emptyForm,
   });
 
-  //==== Tải danh sách vị trí: đồng bộ phân trang, tìm kiếm và trạng thái loading ====
   const loadLocations = async (page: number, searchKeyword = keyword) => {
     const requestId = ++latestRequestId.current;
     setLoading(true);
@@ -82,10 +80,7 @@ export default function AdminLocationsPage() {
       setCurrentPage(page);
     } catch (error) {
       if (requestId !== latestRequestId.current) return;
-      setMessage({
-        text: getApiErrorMessage(error, "Không thể tải danh sách vị trí."),
-        type: "error",
-      });
+      showToast(getApiErrorMessage(error, "Không thể tải danh sách vị trí."), "error");
     } finally {
       if (requestId === latestRequestId.current) setLoading(false);
     }
@@ -102,10 +97,7 @@ export default function AdminLocationsPage() {
       })
       .catch(() => {
         if (active && requestId === latestRequestId.current) {
-          setMessage({
-            text: "Không thể tải danh sách vị trí.",
-            type: "error",
-          });
+          showToast("Không thể tải danh sách vị trí.", "error");
         }
       })
       .finally(() => {
@@ -114,9 +106,13 @@ export default function AdminLocationsPage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [showToast]);
 
-  //==== Biểu mẫu vị trí: quản lý dữ liệu thêm, sửa và ảnh đại diện ====
+  const handleSearchChange = (val: string) => {
+    setKeyword(val);
+    void loadLocations(1, val);
+  };
+
   const openCreate = () => {
     setEditing(null);
     setImageFile(null);
@@ -128,9 +124,9 @@ export default function AdminLocationsPage() {
   const openEdit = (location: ApiLocation) => {
     setEditing(location);
     setImageFile(null);
-    setImagePreview(location.hinhAnh);
+    setImagePreview(location.hinhAnh || "");
     reset({
-      hinhAnh: location.hinhAnh,
+      hinhAnh: location.hinhAnh || "",
       quocGia: location.quocGia,
       tenViTri: location.tenViTri,
       tinhThanh: location.tinhThanh,
@@ -138,128 +134,89 @@ export default function AdminLocationsPage() {
     setModalOpen(true);
   };
 
-  const chooseImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0] ?? null;
-    if (!file) return;
-    const validationMessage = getImageValidationMessage(file);
-    if (validationMessage) {
-      event.target.value = "";
-      setImageFile(null);
-      setMessage({ text: validationMessage, type: "error" });
-      return;
-    }
-    setMessage(null);
+  const handleFileSelect = (file: File | null, preview: string) => {
     setImageFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(String(reader.result));
-    reader.readAsDataURL(file);
+    setImagePreview(preview);
+    setValue("hinhAnh", preview);
+  };
+
+  const handleUrlChange = (url: string) => {
+    setImageFile(null);
+    setImagePreview(url);
+    setValue("hinhAnh", url);
   };
 
   const submit = async (values: LocationFormData) => {
-    setMessage(null);
     try {
-      const payload = {
-        hinhAnh: values.hinhAnh || editing?.hinhAnh || "",
-        quocGia: values.quocGia,
-        tenViTri: values.tenViTri,
-        tinhThanh: values.tinhThanh,
-      };
-      const response = editing
-        ? await updateLocation(editing.id, payload)
-        : await createLocation({ ...payload, id: 0 });
-      const savedId = editing?.id ?? response.content.id;
-      if (imageFile && savedId) {
-        await uploadLocationImage(savedId, imageFile);
-      }
-      setModalOpen(false);
-      setMessage(null);
+      let savedLocationId = editing?.id;
+      const effectiveImage = imagePreview || values.hinhAnh || "";
+
       if (editing) {
-        showToast("Đã cập nhật vị trí.", "success");
+        await updateLocation(editing.id, {
+          ...values,
+          hinhAnh: effectiveImage,
+          id: editing.id,
+        });
+        showToast("Đã cập nhật vị trí thành công.", "success");
       } else {
-        showToast("Đã thêm vị trí.", "success");
+        const response = await createLocation({
+          ...values,
+          hinhAnh: effectiveImage,
+        });
+        savedLocationId = response.content.id;
+        showToast("Đã tạo vị trí mới thành công.", "success");
       }
+
+      if (imageFile && savedLocationId) {
+        await uploadLocationImage(savedLocationId, imageFile);
+      }
+
+      setModalOpen(false);
       await loadLocations(currentPage);
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(error, "Không thể lưu vị trí."),
-        type: "error",
-      });
+      showToast(getApiErrorMessage(error, "Không thể lưu thông tin vị trí."), "error");
     }
   };
 
-  //==== Xóa vị trí: thực thi yêu cầu sau bước xác nhận và làm mới dữ liệu ====
   const confirmRemove = async () => {
     if (!deletingLocation) return;
-
     setDeleting(true);
     try {
       await deleteLocation(deletingLocation.id);
-      setMessage(null);
-      showToast("Đã xóa vị trí.", "success");
+      showToast(`Đã xóa vị trí "${deletingLocation.tenViTri}" thành công.`, "success");
       await loadLocations(currentPage);
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(
-          error,
-          "Không thể xóa vị trí. Hãy kiểm tra các phòng liên quan.",
-        ),
-        type: "error",
-      });
+      showToast(getApiErrorMessage(error, "Không thể xóa vị trí."), "error");
     } finally {
       setDeleting(false);
       setDeletingLocation(null);
     }
   };
 
-  //==== Giao diện quản lý vị trí: hiển thị bộ lọc, danh sách và các hộp thoại ====
   return (
-    <div>
+    <div className="space-y-6">
       <AdminPageHeader
         action={
           <Button
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto font-bold shadow-md"
             variant="create"
             onClick={openCreate}
           >
-            + Thêm vị trí
+            <i className="fa-solid fa-map-pin mr-1" />
+            Thêm vị trí
           </Button>
         }
         description="Quản lý điểm đến, tỉnh thành và hình ảnh đại diện."
         title="Quản lý vị trí"
       />
-      <form
-        className={`${uiClassNames.surface} mt-6 grid grid-cols-2 gap-2 p-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]`}
-        onSubmit={(event) => {
-          event.preventDefault();
-          void loadLocations(1);
-        }}
-      >
-        <input
-          className={`${uiClassNames.field} col-span-2 sm:col-span-1`}
-          placeholder="Tìm vị trí hoặc tỉnh thành"
-          value={keyword}
-          onChange={(event) => setKeyword(event.target.value)}
-        />
-        <Button className="w-full whitespace-nowrap" type="submit">
-          Tìm
-        </Button>
-        <Button
-          className="w-full whitespace-nowrap"
-          disabled={!keyword}
-          variant="secondary"
-          onClick={() => {
-            setKeyword("");
-            void loadLocations(1, "");
-          }}
-        >
-          Xóa lọc
-        </Button>
-      </form>
-      {message && (
-        <div className="mt-5">
-          <StatusMessage message={message.text} type={message.type} />
-        </div>
-      )}
+
+      {/* Thanh tìm kiếm Debouncing tự động */}
+      <AdminSearchBar
+        placeholder="Tìm kiếm vị trí hoặc tỉnh thành..."
+        value={keyword}
+        onChange={handleSearchChange}
+      />
+
       {loading && locations.length === 0 ? (
         <LoadingState label="Đang tải vị trí..." variant="cards" />
       ) : locations.length === 0 ? (
@@ -273,21 +230,22 @@ export default function AdminLocationsPage() {
         <>
           <div className="relative mt-6">
             {loading && <LoadingOverlay label="Đang cập nhật vị trí..." />}
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {/* Hiển thị 4 items / row trên Desktop (xl:grid-cols-4) */}
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {locations.map((location) => (
                 <article
-                  className={`${uiClassNames.surface} group overflow-hidden`}
+                  className={`${uiClassNames.adminCard} group overflow-hidden flex flex-col hover:border-rose-400/50 dark:hover:border-rose-500/30 transition-all`}
                   key={location.id}
                 >
                   <div
-                    className={`relative h-44 overflow-hidden bg-gray-100 ${uiClassNames.locationImageSweep}`}
+                    className={`relative h-44 overflow-hidden bg-gray-100 dark:bg-slate-800 ${uiClassNames.locationImageSweep}`}
                   >
                     {getImageSource(location.hinhAnh) ? (
                       <Image
                         fill
                         alt={location.tenViTri}
                         className="object-cover"
-                        sizes="(max-width: 640px) 100vw, 33vw"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1280px) 33vw, 25vw"
                         src={getImageSource(location.hinhAnh)!}
                       />
                     ) : (
@@ -296,24 +254,33 @@ export default function AdminLocationsPage() {
                       </div>
                     )}
                   </div>
-                  <div className="p-5">
-                    <div className="flex justify-between gap-3">
-                      <div>
-                        <h2 className="font-semibold">{location.tenViTri}</h2>
-                        <p className="mt-1 text-sm text-gray-500">
-                          {location.tinhThanh}, {location.quocGia}
-                        </p>
+                  <div className="p-4 flex-1 flex flex-col justify-between">
+                    <div>
+                      <div className="flex justify-between items-start gap-2">
+                        <h2 className="font-bold text-gray-900 dark:text-white text-base leading-snug truncate">
+                          {location.tenViTri}
+                        </h2>
+                        <span className="text-xs font-mono font-semibold text-gray-400 dark:text-slate-500 shrink-0">
+                          #{location.id}
+                        </span>
                       </div>
-                      <span className="text-xs text-gray-400">
-                        #{location.id}
-                      </span>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                        {location.tinhThanh}, {location.quocGia}
+                      </p>
                     </div>
-                    <div className="mt-4 flex gap-2">
-                      <Button variant="edit" onClick={() => openEdit(location)}>
+
+                    {/* 2 Nút Sửa và Xóa cân đối, đẹp mắt */}
+                    <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-gray-100 dark:border-white/5">
+                      <Button
+                        className="w-full text-xs font-bold py-2 justify-center"
+                        variant="edit"
+                        onClick={() => openEdit(location)}
+                      >
                         <i className="fa-solid fa-pen-to-square" />
                         Sửa
                       </Button>
                       <Button
+                        className="w-full text-xs font-bold py-2 justify-center"
                         variant="delete"
                         onClick={() => setDeletingLocation(location)}
                       >
@@ -334,103 +301,89 @@ export default function AdminLocationsPage() {
         </>
       )}
 
+      {/* Modal Thêm / Sửa vị trí với 2 kiểu chọn ảnh */}
       <Modal
         open={modalOpen}
-        size="lg"
         title={editing ? "Cập nhật vị trí" : "Thêm vị trí"}
         onClose={() => setModalOpen(false)}
       >
         <form
-          className="space-y-5"
+          className="space-y-4"
           onSubmit={(event) => void handleSubmit(submit)(event)}
         >
-          <div className="grid gap-5 sm:grid-cols-2">
-            <div className="space-y-4">
-              <label className="block text-sm font-medium">
-                Tên vị trí
-                <input
-                  className={`${uiClassNames.field} mt-1.5`}
-                  {...register("tenViTri")}
-                />
-                {errors.tenViTri && (
-                  <span className="text-xs text-red-500">
-                    {errors.tenViTri.message}
-                  </span>
-                )}
-              </label>
-              <label className="block text-sm font-medium">
-                Tỉnh thành
-                <input
-                  className={`${uiClassNames.field} mt-1.5`}
-                  {...register("tinhThanh")}
-                />
-              </label>
-              <label className="block text-sm font-medium">
-                Quốc gia
-                <input
-                  className={`${uiClassNames.field} mt-1.5`}
-                  {...register("quocGia")}
-                />
-              </label>
-              <label className="block text-sm font-medium">
-                URL hình hiện tại
-                <input
-                  className={`${uiClassNames.field} mt-1.5`}
-                  {...register("hinhAnh")}
-                />
-              </label>
-            </div>
-            <div>
-              <label className="block text-sm font-medium">
-                Tải hình mới
-                <input
-                  accept="image/*"
-                  className={`${uiClassNames.field} mt-1.5`}
-                  type="file"
-                  onChange={chooseImage}
-                />
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Chọn hình JPG hoặc PNG có dung lượng dưới 1MB.
-                </p>
-              </label>
-              <div
-                className={`group relative mt-4 aspect-[4/3] overflow-hidden rounded-2xl bg-gray-100 ${uiClassNames.locationImageSweep}`}
-              >
-                {imagePreview ? (
-                  <Image
-                    fill
-                    unoptimized={imagePreview.startsWith("data:")}
-                    alt="Xem trước vị trí"
-                    className="object-cover"
-                    src={imagePreview}
-                  />
-                ) : (
-                  <div className="grid h-full place-items-center text-sm text-gray-400">
-                    Chưa có hình xem trước
-                  </div>
-                )}
-              </div>
-            </div>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200">
+            Tên vị trí <span className="text-rose-500">*</span>
+            <input
+              className={`${uiClassNames.field} mt-1.5`}
+              placeholder="VD: Quận 1, Bến Nghé"
+              {...register("tenViTri")}
+            />
+            {errors.tenViTri && (
+              <span className="block mt-1 text-xs font-semibold text-red-500">
+                {errors.tenViTri.message}
+              </span>
+            )}
+          </label>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+              Tỉnh thành <span className="text-rose-500">*</span>
+              <input
+                className={`${uiClassNames.field} mt-1.5`}
+                placeholder="VD: Hồ Chí Minh"
+                {...register("tinhThanh")}
+              />
+              {errors.tinhThanh && (
+                <span className="block mt-1 text-xs font-semibold text-red-500">
+                  {errors.tinhThanh.message}
+                </span>
+              )}
+            </label>
+            <label className="text-sm font-semibold text-gray-700 dark:text-slate-200">
+              Quốc gia <span className="text-rose-500">*</span>
+              <input
+                className={`${uiClassNames.field} mt-1.5`}
+                placeholder="VD: Việt Nam"
+                {...register("quocGia")}
+              />
+              {errors.quocGia && (
+                <span className="block mt-1 text-xs font-semibold text-red-500">
+                  {errors.quocGia.message}
+                </span>
+              )}
+            </label>
           </div>
-          <div className="flex justify-end gap-2">
+
+          {/* Chọn 2 kiểu ảnh: Upload file hoặc Nhập link URL */}
+          <DualImagePicker
+            previewUrl={imagePreview}
+            onError={(msg) => showToast(msg, "error")}
+            onFileSelect={handleFileSelect}
+            onUrlChange={handleUrlChange}
+          />
+
+          <div className="flex justify-end gap-2.5 pt-2 border-t border-gray-100 dark:border-white/10">
             <Button variant="secondary" onClick={() => setModalOpen(false)}>
               Hủy
             </Button>
             <Button
+              className="font-bold shadow-md"
               loading={isSubmitting}
               type="submit"
               variant={editing ? "edit" : "create"}
             >
-              Lưu vị trí
+              {editing ? "Cập nhật vị trí" : "Lưu vị trí"}
             </Button>
           </div>
         </form>
       </Modal>
+
+      {/* Xác nhận xóa có đếm ngược 5 giây */}
       <DeleteConfirmDialog
-        description={`Vị trí "${deletingLocation?.tenViTri ?? ""}" sẽ bị xóa. Các phòng đang liên kết có thể khiến thao tác thất bại.`}
+        countdownSeconds={5}
+        description={`Vị trí "${deletingLocation?.tenViTri ?? ""}" sẽ bị xóa khỏi hệ thống. Vui lòng chờ 5 giây để xác nhận thao tác.`}
         loading={deleting}
         open={Boolean(deletingLocation)}
-        title="Xóa vị trí"
+        title="Xác nhận xóa vị trí"
         onCancel={() => setDeletingLocation(null)}
         onConfirm={() => void confirmRemove()}
       />

@@ -149,7 +149,7 @@ export default async function RoomDetailPage({
 
         <RoomGallery imageSource={imageSource} roomName={room.tenPhong} />
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
+        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_440px] lg:items-start">
           <div className="min-w-0">
             <section className="border-b border-gray-200 pb-8">
               <p className="text-sm font-semibold text-rose-500">

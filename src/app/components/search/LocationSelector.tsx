@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { normalizeVietnameseSearch } from "@/app/components/search/date-utils";
 import type { ApiLocation } from "@/app/lib/api";
 import { getImageSource } from "@/app/lib/image";
 import { uiClassNames } from "@/app/lib/styles";
@@ -28,39 +29,83 @@ const LocationSelector = ({
   variant,
 }: LocationSelectorProps) => {
   const [keyword, setKeyword] = useState("");
+  const [debouncedKeyword, setDebouncedKeyword] = useState("");
+  const [isDebouncing, setIsDebouncing] = useState(false);
+
+  useEffect(() => {
+    if (keyword !== debouncedKeyword) {
+      setIsDebouncing(true);
+    }
+    const timer = setTimeout(() => {
+      setDebouncedKeyword(keyword);
+      setIsDebouncing(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [keyword, debouncedKeyword]);
+
   const selectedLocation = locations.find(
     (location) => location.id === selectedId,
   );
+
   const filteredLocations = useMemo(() => {
-    const normalizedKeyword = keyword.trim().toLowerCase();
+    const normalizedKeyword = normalizeVietnameseSearch(debouncedKeyword);
     if (!normalizedKeyword) {
       return locations;
     }
-    return locations.filter((location) =>
-      [location.tenViTri, location.tinhThanh, location.quocGia].some((value) =>
-        value.toLowerCase().includes(normalizedKeyword),
-      ),
-    );
-  }, [keyword, locations]);
+    return locations.filter((location) => {
+      const tenViTri = normalizeVietnameseSearch(location.tenViTri);
+      const tinhThanh = normalizeVietnameseSearch(location.tinhThanh);
+      const quocGia = normalizeVietnameseSearch(location.quocGia);
+      const combined = `${tenViTri}${tinhThanh}${quocGia}`;
+
+      return (
+        tenViTri.includes(normalizedKeyword) ||
+        tinhThanh.includes(normalizedKeyword) ||
+        quocGia.includes(normalizedKeyword) ||
+        combined.includes(normalizedKeyword)
+      );
+    });
+  }, [debouncedKeyword, locations]);
 
   const content = (
     <div className="p-5 sm:p-6">
-      <h3 className="text-base font-semibold text-gray-900">
+      <h3 className="text-base font-semibold text-gray-900 dark:text-white">
         Tìm kiếm theo địa điểm
       </h3>
-      <label className="mt-4 flex items-center gap-3 rounded-xl border border-gray-900 px-4 py-3 shadow-sm">
-        <span aria-hidden="true" className="text-xl">
+      <label className="mt-4 flex items-center gap-3 rounded-xl border border-gray-900 dark:border-white/20 px-4 py-3 shadow-sm focus-within:ring-2 focus-within:ring-rose-500">
+        <span aria-hidden="true" className="text-xl text-gray-700 dark:text-slate-300">
           ⌕
         </span>
         <input
           autoFocus={variant === "desktop"}
-          className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500"
           placeholder="Tìm kiếm điểm đến"
           value={keyword}
           onChange={(event) => setKeyword(event.target.value)}
         />
+        {isDebouncing && (
+          <span className="flex items-center gap-1 text-xs text-rose-500 font-medium animate-pulse">
+            <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping" />
+            Đang tìm...
+          </span>
+        )}
+        {keyword && !isDebouncing && (
+          <button
+            aria-label="Xóa từ khóa"
+            className="text-sm font-semibold text-gray-400 hover:text-gray-700 dark:hover:text-white"
+            type="button"
+            onClick={() => {
+              setKeyword("");
+              setDebouncedKeyword("");
+              setIsDebouncing(false);
+            }}
+          >
+            ×
+          </button>
+        )}
       </label>
-      <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-gray-500">
+      <p className="mt-5 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
         Điểm đến gợi ý
       </p>
       <div

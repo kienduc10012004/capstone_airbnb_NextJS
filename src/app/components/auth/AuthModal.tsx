@@ -160,8 +160,8 @@ const SignUpForm = ({
   return (
     <form className="space-y-4" onSubmit={handleSubmit(submit)}>
       {apiError && <StatusMessage message={apiError} type="error" />}
-      <Field error={errors.name?.message} label="Họ và tên">
-        <input className={uiClassNames.field} {...register("name")} />
+      <Field error={errors.name?.message} label="Tên tài khoản">
+        <input className={uiClassNames.field} placeholder="VD: nam_nguyen hoặc Nguyễn Văn A" {...register("name")} />
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field error={errors.email?.message} label="Email">

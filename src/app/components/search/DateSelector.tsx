@@ -191,28 +191,22 @@ const DateSelector = ({
 
   const content = (
     <div className="p-5 sm:p-7">
-      {/* Tab selector */}
-      <div className="mx-auto mb-6 flex w-fit rounded-full bg-gray-100 dark:bg-slate-800 p-1">
-        <span className="rounded-full bg-white dark:bg-slate-700 px-5 py-2 text-xs font-semibold shadow-sm text-gray-900 dark:text-white">
-          Chọn ngày
-        </span>
-        <span className="px-5 py-2 text-xs font-semibold text-gray-400 dark:text-slate-400">
-          Ngày linh hoạt
-        </span>
-      </div>
-
-      {/* Hint when picking end */}
-      {pickingEnd && (
+      {/* 2 thông báo theo từng bước: Ban đầu là 'Chọn ngày bắt đầu', sau khi bấm chọn mới hiện 'Di chuột để xem, nhấn để chọn ngày trả phòng' */}
+      {!value.checkIn ? (
+        <div className="mb-5 flex justify-center">
+          <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-500/30 px-4 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-300 animate-pulse">
+            <i aria-hidden="true" className="fa-solid fa-hand-pointer" />
+            Chọn ngày bắt đầu
+          </span>
+        </div>
+      ) : pickingEnd ? (
         <div className="mb-5 flex justify-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-500/30 px-4 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-300 animate-pulse">
             <i aria-hidden="true" className="fa-solid fa-hand-pointer" />
             Di chuột để xem, nhấn để chọn ngày trả phòng
           </span>
         </div>
-      )}
-
-      {/* Confirmed range pill */}
-      {value.checkIn && !pickingEnd && (
+      ) : (
         <div className="mb-5 flex justify-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-rose-50 dark:bg-rose-500/20 border border-rose-200 dark:border-rose-500/30 px-4 py-1.5 text-xs font-semibold text-rose-600 dark:text-rose-300">
             <i aria-hidden="true" className="fa-solid fa-calendar-days" />

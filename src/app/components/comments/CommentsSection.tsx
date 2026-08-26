@@ -362,32 +362,32 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
       ) : (
         <div
           aria-label="Danh sách đánh giá"
-          className="mt-8 lg:max-h-[580px] lg:overflow-y-auto lg:pr-3 lg:[scrollbar-gutter:stable]"
+          className="mt-8 lg:max-h-[600px] lg:overflow-y-auto lg:pr-2 lg:[scrollbar-gutter:stable]"
           ref={scrollContainerRef}
           role="region"
           tabIndex={0}
         >
-          <div className="grid gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             {comments.slice(0, visibleCount).map((comment) => {
               const canManage =
                 user?.id === comment.maNguoiBinhLuan || user?.role === "ADMIN";
               return (
                 <article
-                  className="rounded-2xl border border-gray-200 p-5"
+                  className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-slate-900/40 overflow-hidden min-w-0 shadow-sm"
                   key={comment.id}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="grid h-10 w-10 place-items-center rounded-full bg-rose-100 font-semibold text-rose-600">
+                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rose-100 dark:bg-rose-950/60 font-semibold text-rose-600 dark:text-rose-400">
                         {(comment.tenNguoiBinhLuan || "K")
                           .charAt(0)
                           .toUpperCase()}
                       </div>
                       <div>
-                        <h3 className="text-sm font-semibold">
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                           {comment.tenNguoiBinhLuan || "Khách hàng Airbnb"}
                         </h3>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-slate-400">
                           {new Date(comment.ngayBinhLuan).toLocaleDateString(
                             "vi-VN",
                           )}
@@ -397,8 +397,8 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
                     <Stars value={comment.saoBinhLuan} />
                   </div>
                   <ExpandableText
-                    className="mt-4 text-sm leading-6 text-gray-700"
-                    previewLength={180}
+                    className="mt-3 text-sm leading-relaxed text-gray-700 dark:text-slate-200"
+                    previewLength={110}
                     text={comment.noiDung}
                   />
                   {canManage && (

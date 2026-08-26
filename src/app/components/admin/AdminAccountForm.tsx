@@ -9,7 +9,6 @@ import AdminPageHeader from "@/app/components/admin/AdminPageHeader";
 import Button from "@/app/components/ui/Button";
 import ConfirmDialog from "@/app/components/ui/ConfirmDialog";
 import LoadingState from "@/app/components/ui/LoadingState";
-import StatusMessage from "@/app/components/ui/StatusMessage";
 import {
   getApiErrorMessage,
   getUserById,
@@ -17,10 +16,9 @@ import {
   uploadAvatar,
   type ApiUser,
 } from "@/app/lib/api";
-import { SIGN_IN_EMAIL_STORAGE_KEY } from "@/app/lib/auth-events";
 import { getImageSource, getImageValidationMessage } from "@/app/lib/image";
 import { profileSchema, type ProfileFormData } from "@/app/lib/schemas";
-import { clearSession } from "@/app/lib/session";
+import { updateSession } from "@/app/lib/session";
 import { uiClassNames } from "@/app/lib/styles";
 import { formatBirthdayForInput, formatPhoneForInput } from "@/app/lib/user";
 import { useAuthStore } from "@/app/store/useAuthStore";
@@ -51,10 +49,7 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
   const [pendingValues, setPendingValues] = useState<ProfileFormData | null>(
     null,
   );
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "error";
-  } | null>(null);
+
   const {
     formState: { errors },
     handleSubmit,
@@ -65,13 +60,12 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
     defaultValues: getFormValues(currentUser),
   });
 
-  //==== Tải tài khoản Admin: lấy dữ liệu mới nhất và đưa vào biểu mẫu chỉnh sửa ====
   useEffect(() => {
     let active = true;
 
     getUserById(currentUser.id)
       .then((freshUser) => {
-        if (active) {
+        if (active && freshUser) {
           setUser(freshUser);
           reset(getFormValues(freshUser));
         }
@@ -86,68 +80,69 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
     };
   }, [currentUser.id, reset]);
 
-  //==== Đổi avatar: kiểm tra file dưới 1MB rồi upload ====
   const changeAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
     const validationMessage = getImageValidationMessage(file);
     if (validationMessage) {
-      setMessage({ text: validationMessage, type: "error" });
+      showToast(validationMessage, "error");
       return;
     }
 
     setUploading(true);
-    setMessage(null);
     try {
       const response = await uploadAvatar(file);
       setUser(response.content);
       setAuthUser(response.content);
-      showToast("Đã cập nhật ảnh đại diện.", "success");
+      updateSession(response.content);
+      showToast("Đã cập nhật ảnh đại diện thành công.", "success");
     } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(error, "Không thể tải ảnh đại diện."),
-        type: "error",
-      });
+      showToast(getApiErrorMessage(error, "Không thể tải ảnh đại diện."), "error");
     } finally {
       setUploading(false);
     }
   };
 
-  //==== Lưu tài khoản Admin: cập nhật dữ liệu rồi kết thúc phiên để đăng nhập lại ====
   const confirmSave = async () => {
     if (!pendingValues) return;
 
     setSaving(true);
-    setMessage(null);
+    const targetUserId = Number(user.id || currentUser.id);
+
     try {
-      await updateUser(currentUser.id, {
+      const response = await updateUser(targetUserId, {
         birthday: pendingValues.birthday,
         email: pendingValues.email,
         gender: pendingValues.gender === "true",
-        id: currentUser.id,
+        id: targetUserId,
         name: pendingValues.name,
         phone: pendingValues.phone,
         role: "ADMIN",
       });
-      window.sessionStorage.setItem(
-        SIGN_IN_EMAIL_STORAGE_KEY,
-        pendingValues.email,
-      );
-      showToast("Đã cập nhật tài khoản quản trị.", "success");
-      window.setTimeout(() => {
-        clearSession();
-        window.location.assign("/?auth=signin");
-      }, 700);
-    } catch (error) {
-      setMessage({
-        text: getApiErrorMessage(
-          error,
-          "Không thể cập nhật tài khoản quản trị.",
-        ),
-        type: "error",
-      });
+
+      const updatedUser = response?.content || {
+        ...user,
+        ...pendingValues,
+        gender: pendingValues.gender === "true",
+        id: targetUserId,
+        role: "ADMIN",
+      };
+
+      setUser(updatedUser);
+      setAuthUser(updatedUser);
+      updateSession(updatedUser);
+      reset(getFormValues(updatedUser));
+      setIsEditing(false);
       setPendingValues(null);
+      showToast("Đã cập nhật thông tin tài khoản quản trị thành công.", "success");
+    } catch (error) {
+      showToast(
+        getApiErrorMessage(error, "Không thể cập nhật tài khoản quản trị."),
+        "error",
+      );
+      setPendingValues(null);
+    } finally {
       setSaving(false);
     }
   };
@@ -163,7 +158,6 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
 
   const avatarSource = getImageSource(user.avatar);
 
-  //==== Giao diện tài khoản Admin: layout giống trang hồ sơ người dùng ====
   return (
     <>
       <AdminPageHeader
@@ -192,7 +186,6 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
                   </div>
                 )}
               </div>
-              {/* Name shown inline on mobile next to avatar */}
               <div className="sm:hidden">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{user.name}</h2>
                 <p className="text-xs text-gray-500 dark:text-slate-400">{user.email}</p>
@@ -274,22 +267,17 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
           className="space-y-5 bg-white dark:bg-[#1a2236] p-6 sm:p-8"
           onSubmit={handleSubmit((values) => setPendingValues(values))}
         >
-          {message && (
-            <div className="mb-2">
-              <StatusMessage message={message.text} type={message.type} />
-            </div>
-          )}
-
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="text-sm font-medium text-gray-700 dark:text-slate-200">
-              Họ và tên
+              Tên tài khoản
               <input
                 className={`${uiClassNames.field} mt-1.5 ${!isEditing ? "cursor-default select-none bg-gray-50 dark:bg-slate-800/60 text-gray-600 dark:text-slate-300" : ""}`}
+                placeholder="VD: nam_nguyen hoặc Nguyễn Văn A"
                 readOnly={!isEditing}
                 {...register("name")}
               />
               {errors.name && isEditing && (
-                <span className="mt-1 block text-xs text-red-500">
+                <span className="mt-1 block text-xs text-red-500 font-semibold">
                   {errors.name.message}
                 </span>
               )}
@@ -305,7 +293,7 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
                 {...register("email")}
               />
               {errors.email && isEditing && (
-                <span className="mt-1 block text-xs text-red-500">
+                <span className="mt-1 block text-xs text-red-500 font-semibold">
                   {errors.email.message}
                 </span>
               )}
@@ -320,7 +308,7 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
                 {...register("phone")}
               />
               {errors.phone && isEditing && (
-                <span className="mt-1 block text-xs text-red-500">
+                <span className="mt-1 block text-xs text-red-500 font-semibold">
                   {errors.phone.message}
                 </span>
               )}
@@ -335,7 +323,7 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
                 {...register("birthday")}
               />
               {errors.birthday && isEditing && (
-                <span className="mt-1 block text-xs text-red-500">
+                <span className="mt-1 block text-xs text-red-500 font-semibold">
                   {errors.birthday.message}
                 </span>
               )}
@@ -367,13 +355,13 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
 
           <div className="flex items-center justify-between border-t border-gray-100 dark:border-white/10 pt-4">
             {isEditing ? (
-              <p className="text-xs text-amber-600 dark:text-amber-400">
+              <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">
                 <i className="fa-solid fa-triangle-exclamation mr-1" />
                 Đang ở chế độ chỉnh sửa
               </p>
             ) : (
               <p className="text-xs text-gray-400 dark:text-slate-400">
-                Bấm “Cập nhật” để chỉnh sửa thông tin
+                Bấm “Cập nhật thông tin” để chỉnh sửa
               </p>
             )}
             <div className="flex gap-2">
@@ -411,9 +399,9 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
       </section>
 
       <ConfirmDialog
-        confirmLabel="Lưu và đăng xuất"
+        confirmLabel="Lưu thay đổi"
         confirmVariant="edit"
-        description="Xác nhận lưu các thay đổi cho tài khoản quản trị?"
+        description="Xác nhận lưu các thông tin chỉnh sửa cho tài khoản quản trị?"
         loading={saving}
         open={Boolean(pendingValues)}
         title="Xác nhận cập nhật tài khoản"

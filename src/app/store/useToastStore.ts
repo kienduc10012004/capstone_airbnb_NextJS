@@ -2,16 +2,18 @@
 
 import { create } from "zustand";
 
-type ToastMessage = {
+export type ToastTone = "error" | "info" | "rose" | "success";
+
+export type ToastMessage = {
   id: number;
   message: string;
-  tone: "rose" | "success";
+  tone: ToastTone;
 };
 
 type ToastState = {
   toasts: ToastMessage[];
   hideToast: (id: number) => void;
-  showToast: (message: string, tone?: ToastMessage["tone"]) => void;
+  showToast: (message: string, tone?: ToastTone) => void;
 };
 
 let nextToastId = Date.now();

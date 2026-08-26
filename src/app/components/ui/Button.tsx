@@ -9,22 +9,22 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 };
 
 const variants: Record<ButtonVariant, string> = {
-  create: "bg-green-600 text-white shadow-sm hover:bg-green-700",
-  delete: "bg-red-600 text-white shadow-sm hover:bg-red-700",
-  edit: "bg-blue-600 text-white shadow-sm hover:bg-blue-700",
+  create: "bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:bg-emerald-800",
+  delete: "bg-red-600 text-white shadow-sm hover:bg-red-700 active:bg-red-800",
+  edit: "bg-blue-600 text-white shadow-sm hover:bg-blue-700 active:bg-blue-800",
   primary:
-    "bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-sm hover:from-rose-600 hover:to-pink-700",
+    "bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-sm hover:from-rose-600 hover:to-pink-700 active:opacity-90",
   secondary:
-    "border border-gray-300 bg-white text-gray-800 hover:border-gray-400 hover:bg-gray-50",
-  danger: "bg-red-600 text-white hover:bg-red-700",
-  ghost: "text-gray-700 hover:bg-gray-100",
+    "border border-gray-300 dark:border-white/20 bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 active:bg-gray-200",
+  danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800",
+  ghost: "text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800",
 };
 
 export const buttonClassName = (
   variant: ButtonVariant = "primary",
   className = "",
 ) =>
-  `relative inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-300 ease-out hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:translate-y-0 disabled:opacity-50 ${variants[variant]} ${className}`;
+  `relative inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-[color,background-color,border-color,box-shadow,opacity] duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-50 ${variants[variant]} ${className}`;
 
 const Button = ({
   children,

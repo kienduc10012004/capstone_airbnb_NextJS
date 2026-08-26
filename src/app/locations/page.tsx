@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Footer from "@/app/components/Footer";
 import Header from "@/app/components/Header";
 import LocationCard from "@/app/components/locations/LocationCard";
-import { buttonClassName } from "@/app/components/ui/Button";
+import LocationSearchBar from "@/app/components/locations/LocationSearchBar";
 import EmptyState from "@/app/components/ui/EmptyState";
 import Pagination from "@/app/components/ui/Pagination";
 import { getLocationsPaged } from "@/app/lib/api";
@@ -80,17 +80,7 @@ export default async function LocationsPage({
               vài bước.
             </p>
           </div>
-          <form className="flex w-full gap-2 sm:max-w-md">
-            <input
-              className={uiClassNames.field}
-              defaultValue={keyword}
-              name="keyword"
-              placeholder="Tìm vị trí, tỉnh thành"
-            />
-            <button className={buttonClassName()} type="submit">
-              Tìm
-            </button>
-          </form>
+          <LocationSearchBar initialKeyword={keyword} />
         </div>
 
         {locations.length > 0 ? (

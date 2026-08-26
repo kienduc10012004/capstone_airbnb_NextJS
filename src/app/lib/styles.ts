@@ -5,7 +5,7 @@ export const uiClassNames = {
   adminTableHead:
     "border-b border-gray-200/80 dark:border-white/10 bg-gray-50/80 dark:bg-slate-800/80 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-slate-400",
   adminTableRow:
-    "transition-colors duration-200 hover:bg-rose-50/40 dark:hover:bg-white/5 group border-b border-gray-100 dark:border-white/5 text-gray-900 dark:text-slate-100",
+    "transition-colors duration-150 hover:bg-slate-100/80 dark:hover:bg-white/[0.06] group border-b border-gray-100 dark:border-white/5 text-gray-900 dark:text-slate-100",
   cardImageZoom:
     "[backface-visibility:hidden] [transform:translateZ(0)] object-cover transition-[scale,transform] duration-1000 ease-[cubic-bezier(0.16,1,0.3,1)] [will-change:scale,transform]",
   field:

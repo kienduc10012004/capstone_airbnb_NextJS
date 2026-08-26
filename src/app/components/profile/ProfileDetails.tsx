@@ -216,12 +216,13 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
         )}
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
-            Họ và tên
+            Tên tài khoản
             <input
               className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60 ${
                 !isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
               }`}
               readOnly={!isEditing}
+              placeholder="VD: nam_nguyen hoặc Nguyễn Văn A"
               {...register("name")}
             />
             {errors.name && isEditing && (

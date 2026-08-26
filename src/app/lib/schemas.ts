@@ -3,10 +3,17 @@ import { z } from "zod";
 const requiredText = (label: string) =>
   z.string().trim().min(1, `${label} không được để trống.`);
 
-const birthdaySchema = requiredText("Ngày sinh").regex(
-  /^\d{4}-\d{2}-\d{2}$/,
-  "Ngày sinh không đúng định dạng.",
-);
+const phoneRegex = /^(03|05|07|08|09)\d{8}$/;
+
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&._#^~+=-])[A-Za-z\d@$!%*?&._#^~+=-]{8,}$/;
+
+const birthdaySchema = requiredText("Ngày sinh")
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Ngày sinh không đúng định dạng (YYYY-MM-DD).")
+  .refine(
+    (val) => new Date(val) <= new Date(),
+    "Ngày sinh không thể là ngày trong tương lai.",
+  );
 
 export const signInSchema = z.object({
   email: z.string().trim().email("Email không hợp lệ."),
@@ -14,13 +21,22 @@ export const signInSchema = z.object({
 });
 
 export const signUpSchema = z.object({
-  name: requiredText("Họ tên").min(2, "Họ tên phải có ít nhất 2 ký tự."),
-  email: z.string().trim().email("Email không hợp lệ."),
-  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự."),
+  name: requiredText("Tên tài khoản").min(1, "Tên tài khoản không được để trống."),
+  email: z.string().trim().email("Email không hợp lệ (VD: user@example.com)."),
+  password: z
+    .string()
+    .min(8, "Mật khẩu phải có ít nhất 8 ký tự.")
+    .regex(
+      passwordRegex,
+      "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.",
+    ),
   phone: z
     .string()
     .trim()
-    .regex(/^[0-9]{9,11}$/, "Số điện thoại phải có từ 9 đến 11 chữ số."),
+    .regex(
+      phoneRegex,
+      "Số điện thoại phải gồm đúng 10 số và bắt đầu bằng 03, 05, 07, 08, 09.",
+    ),
   birthday: birthdaySchema,
   gender: z.enum(["true", "false"]),
 });
@@ -29,11 +45,29 @@ export const profileSchema = signUpSchema
   .omit({ password: true })
   .extend({ role: z.enum(["USER", "ADMIN"]) });
 
-export const adminUserSchema = profileSchema.extend({
+export const adminUserSchema = z.object({
+  name: requiredText("Tên tài khoản").min(1, "Tên tài khoản không được để trống."),
+  email: z.string().trim().email("Email không hợp lệ (VD: user@example.com)."),
+  phone: z
+    .string()
+    .trim()
+    .regex(
+      phoneRegex,
+      "Số điện thoại phải gồm đúng 10 số và bắt đầu bằng 03, 05, 07, 08, 09.",
+    ),
+  birthday: birthdaySchema,
+  gender: z.enum(["true", "false"]),
+  role: z.enum(["USER", "ADMIN"]),
   password: z
     .union([
       z.literal(""),
-      z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự."),
+      z
+        .string()
+        .min(8, "Mật khẩu phải có ít nhất 8 ký tự.")
+        .regex(
+          passwordRegex,
+          "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.",
+        ),
     ])
     .optional(),
 });

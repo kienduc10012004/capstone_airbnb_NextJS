@@ -35,6 +35,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
+      suppressHydrationWarning
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable} h-full scroll-smooth antialiased`}
     >
@@ -53,6 +54,7 @@ export default function RootLayout({
         />
       </head>
       <body
+        suppressHydrationWarning
         className={`flex min-h-full flex-col bg-white text-gray-900 selection:bg-rose-500/20 ${uiClassNames.globalInteractions}`}
       >
         <AuthInitializer />

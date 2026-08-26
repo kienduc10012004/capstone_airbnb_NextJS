@@ -3,6 +3,7 @@
 import ConfirmDialog from "@/app/components/ui/ConfirmDialog";
 
 type DeleteConfirmDialogProps = {
+  countdownSeconds?: number;
   description: string;
   loading?: boolean;
   open: boolean;
@@ -14,6 +15,7 @@ type DeleteConfirmDialogProps = {
 
 const DeleteConfirmDialog = ({
   confirmLabel = "Xóa",
+  countdownSeconds = 5,
   description,
   loading = false,
   onCancel,
@@ -24,9 +26,10 @@ const DeleteConfirmDialog = ({
   <ConfirmDialog
     confirmLabel={confirmLabel}
     confirmVariant="delete"
+    countdownSeconds={countdownSeconds}
     description={description}
     iconClassName="fa-solid fa-trash"
-    iconContainerClassName="bg-red-50 text-red-600"
+    iconContainerClassName="bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400"
     loading={loading}
     open={open}
     title={title}
