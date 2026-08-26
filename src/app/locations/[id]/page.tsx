@@ -120,10 +120,10 @@ export default async function LocationDetailPage({
         <section className={`${uiClassNames.appContainer} py-12`}>
           <div className="flex items-end justify-between gap-4">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-900">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                 Phòng tại {location.tenViTri}
               </h2>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
                 {rooms.length} lựa chọn dành cho hành trình của bạn.
               </p>
             </div>

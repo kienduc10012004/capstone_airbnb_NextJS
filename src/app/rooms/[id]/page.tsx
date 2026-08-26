@@ -117,31 +117,31 @@ export default async function RoomDetailPage({
       >
         <nav
           aria-label="Điều hướng trang"
-          className="flex items-center gap-2 text-sm text-gray-500"
+          className="flex items-center gap-2 text-sm text-gray-500 dark:text-slate-400"
         >
-          <Link className="hover:text-rose-500" href="/rooms">
+          <Link className="hover:text-rose-500 transition-colors" href="/rooms">
             Phòng ở
           </Link>
-          <span aria-hidden="true">/</span>
-          <span className="truncate text-gray-700">{locationLabel}</span>
+          <span aria-hidden="true" className="text-gray-300 dark:text-slate-600">/</span>
+          <span className="truncate text-gray-700 dark:text-slate-300">{locationLabel}</span>
         </nav>
 
         <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-950 sm:text-3xl lg:text-4xl">
+            <h1 className="text-2xl font-bold tracking-tight text-gray-950 dark:text-white sm:text-3xl lg:text-4xl">
               {room.tenPhong}
             </h1>
             <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
               <a
-                className="font-semibold text-gray-900 underline-offset-4 hover:underline"
+                className="font-semibold text-gray-900 dark:text-slate-200 underline-offset-4 hover:underline hover:text-rose-600 dark:hover:text-rose-400 transition-colors"
                 href="#reviews"
               >
                 {rating
                   ? `★ ${rating.toFixed(1)} · ${comments.length} đánh giá`
                   : "Chưa có đánh giá"}
               </a>
-              <span className="text-gray-300">·</span>
-              <span className="text-gray-600">{locationLabel}</span>
+              <span className="text-gray-300 dark:text-slate-600">·</span>
+              <span className="text-gray-600 dark:text-slate-400">{locationLabel}</span>
             </div>
           </div>
           <RoomShareButton roomName={room.tenPhong} />

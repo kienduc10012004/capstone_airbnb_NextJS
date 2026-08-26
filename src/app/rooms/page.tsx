@@ -246,10 +246,10 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
       <main className={`${uiClassNames.appContainer} flex-1 py-8 sm:py-12`}>
         <div className="max-w-3xl">
           <p className="text-sm font-semibold text-rose-500">Tìm nơi ở</p>
-          <h1 className="mt-1 text-3xl font-semibold text-gray-900 sm:text-4xl">
+          <h1 className="mt-1 text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
             Không gian phù hợp với hành trình
           </h1>
-          <p className="mt-3 text-sm leading-6 text-gray-500 sm:text-base">
+          <p className="mt-3 text-sm leading-6 text-gray-500 dark:text-slate-400 sm:text-base">
             Lọc theo điểm đến hoặc tên phòng để tìm lựa chọn phù hợp nhất.
           </p>
         </div>
@@ -266,17 +266,16 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
           initialLocationId={locationId || null}
         />
 
-
         <div className="mt-8 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
               {totalRows}{" "}
               {requestedRange
                 ? "phòng còn trống được tìm thấy"
                 : "phòng được tìm thấy"}
             </h2>
             {(requestedRange || hasGuestSelection) && (
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
                 {requestedRange
                   ? `${formatShortDate(
                       requestedRange.checkIn,

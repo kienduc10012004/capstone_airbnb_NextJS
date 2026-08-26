@@ -72,10 +72,10 @@ export default async function LocationsPage({
             <p className="text-sm font-semibold text-rose-500">
               Đi khắp Việt Nam
             </p>
-            <h1 className="mt-1 text-3xl font-semibold sm:text-4xl">
+            <h1 className="mt-1 text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl">
               Điểm đến truyền cảm hứng
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500">
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-gray-500 dark:text-slate-400">
               Khám phá những khu vực nổi bật và tìm căn phòng phù hợp chỉ trong
               vài bước.
             </p>

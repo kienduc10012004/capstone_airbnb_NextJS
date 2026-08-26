@@ -41,7 +41,7 @@ type FieldProps = {
 };
 
 const Field = ({ children, error, label }: FieldProps) => (
-  <label className="block text-sm font-medium text-gray-700">
+  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300">
     {label}
     <span className="mt-1.5 block">{children}</span>
     {error && <span className="mt-1 block text-xs text-red-500">{error}</span>}

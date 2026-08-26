@@ -120,12 +120,12 @@ export default async function Home() {
           <div className="mb-6 flex items-end justify-between gap-4">
             <div>
               <p className="text-sm font-semibold text-rose-500">Khám phá</p>
-              <h2 className="mt-1 text-2xl font-semibold text-gray-900 sm:text-3xl">
+              <h2 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
                 Điểm đến được yêu thích
               </h2>
             </div>
             <Link
-              className="hidden text-sm font-semibold text-gray-700 hover:text-rose-500 sm:block"
+              className="hidden text-sm font-semibold text-gray-700 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 sm:block transition-colors"
               href="/locations"
             >
               Xem tất cả
@@ -138,24 +138,24 @@ export default async function Home() {
           {locations.length > 0 ? (
             <FeaturedLocations locations={locations} />
           ) : (
-            <p className="rounded-2xl bg-gray-50 p-8 text-center text-sm text-gray-500">
+            <p className="rounded-2xl bg-gray-50 dark:bg-slate-800/40 p-8 text-center text-sm text-gray-500 dark:text-slate-400">
               Chưa thể tải danh sách điểm đến.
             </p>
           )}
         </section>
 
         {topRatedRooms.length > 0 && (
-          <section className="border-t border-gray-100 bg-white py-12 sm:py-16">
+          <section className="border-t border-gray-100 dark:border-white/10 bg-white dark:bg-[#1a2236] py-12 sm:py-16 transition-colors">
             <div className={uiClassNames.appContainer}>
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold text-rose-500">
                     Được khách hàng đánh giá cao
                   </p>
-                  <h2 className="mt-1 text-2xl font-semibold text-gray-900 sm:text-3xl">
+                  <h2 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
                     Phòng nổi bật
                   </h2>
-                  <p className="mt-2 text-sm text-gray-500">
+                  <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
                     Top 6 phòng có điểm đánh giá trung bình cao nhất.
                   </p>
                 </div>
@@ -181,7 +181,7 @@ export default async function Home() {
                 <p className="text-sm font-semibold text-rose-500">
                   Lựa chọn nổi bật
                 </p>
-                <h2 className="mt-1 text-2xl font-semibold text-gray-900 sm:text-3xl">
+                <h2 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl">
                   Không gian dành cho bạn
                 </h2>
               </div>
