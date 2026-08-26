@@ -128,22 +128,8 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
           </button>
         </div>
 
-        {/* Admin info box với hình đại diện người dùng */}
-        <div className="hidden lg:block mx-4 mb-4 rounded-2xl bg-white/[0.05] border border-white/[0.08] p-3.5">
-          <div className="flex items-center gap-3">
-            <UserMenuAvatar avatar={user.avatar} name={user.name || "Admin"} />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-white">{user.name}</p>
-              <p className="truncate text-xs text-gray-400">{user.email}</p>
-            </div>
-            <span className="ml-auto shrink-0 rounded-full bg-rose-500/20 border border-rose-500/30 px-2 py-0.5 text-[10px] font-bold text-rose-400 uppercase tracking-wider">
-              Admin
-            </span>
-          </div>
-        </div>
-
         {/* Nav section label */}
-        <div className="hidden lg:block px-6 mb-2">
+        <div className="hidden lg:block px-6 mb-2 mt-2">
           <p className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">Menu</p>
         </div>
 
@@ -198,7 +184,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Main content area */}
       <div className="flex min-w-0 flex-col">
         {/* Top header bar */}
-        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-200/80 bg-white/95 dark:border-white/10 dark:bg-[#1a2236]/95 px-4 py-3 backdrop-blur-sm sm:px-6 lg:px-8">
+        <header className="sticky top-0 z-40 flex items-center justify-between border-b border-gray-200/80 bg-white/95 dark:border-white/10 dark:bg-[#1a2236]/95 px-4 py-2.5 backdrop-blur-sm sm:px-6 lg:px-8">
           <div className="flex items-center gap-2 text-sm">
             <Link href="/admin" className="text-gray-400 hover:text-gray-700 dark:hover:text-slate-200 transition-colors">
               <i className="fa-solid fa-house-chimney text-xs" />
@@ -220,7 +206,22 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Hệ thống hoạt động
             </div>
-            <UserMenuAvatar avatar={user.avatar} name={user.name || "Admin"} />
+
+            {/* Admin Profile Card bên phải */}
+            <Link
+              href="/admin/account"
+              className="flex items-center gap-2.5 rounded-2xl border border-gray-200/80 dark:border-white/10 bg-gray-50/80 dark:bg-slate-800/60 py-1.5 px-3 hover:bg-gray-100 dark:hover:bg-slate-700/60 transition-all shadow-xs"
+              title="Xem và chỉnh sửa tài khoản Admin"
+            >
+              <UserMenuAvatar avatar={user.avatar} name={user.name || "Admin"} />
+              <div className="hidden md:block text-left">
+                <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight max-w-32 truncate">{user.name}</p>
+                <p className="text-[10px] text-gray-400 dark:text-slate-400 leading-tight max-w-32 truncate">{user.email}</p>
+              </div>
+              <span className="rounded-full bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 text-[10px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-wider">
+                ADMIN
+              </span>
+            </Link>
           </div>
         </header>
 
