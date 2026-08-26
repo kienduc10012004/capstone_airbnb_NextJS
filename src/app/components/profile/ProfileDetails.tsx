@@ -233,9 +233,8 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Tên tài khoản
             <input
-              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60 ${
-                !isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
-              }`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
+                }`}
               readOnly={!isEditing}
               placeholder="VD: nam_nguyen hoặc Nguyễn Văn A"
               {...register("name")}
@@ -249,9 +248,8 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Email
             <input
-              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60 ${
-                !isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
-              }`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
+                }`}
               readOnly={!isEditing}
               type="email"
               {...register("email")}
@@ -265,9 +263,8 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Số điện thoại
             <input
-              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60 ${
-                !isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
-              }`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:placeholder-slate-500 dark:focus:border-rose-500/60 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
+                }`}
               readOnly={!isEditing}
               {...register("phone")}
             />
@@ -280,9 +277,8 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Ngày sinh
             <input
-              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:focus:border-rose-500/60 ${
-                !isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
-              }`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:focus:border-rose-500/60 ${!isEditing ? "cursor-default select-none bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
+                }`}
               readOnly={!isEditing}
               type="date"
               {...register("birthday")}
@@ -291,9 +287,8 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
           <label className="text-sm font-medium text-gray-700 dark:text-slate-300">
             Giới tính
             <select
-              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:focus:border-rose-500/60 ${
-                !isEditing ? "cursor-default bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
-              }`}
+              className={`${uiClassNames.field} mt-1.5 dark:border-white/10 dark:bg-[#0f172a] dark:text-white dark:focus:border-rose-500/60 ${!isEditing ? "cursor-default bg-gray-50 text-gray-600 dark:bg-white/5 dark:text-slate-400" : ""
+                }`}
               disabled={!isEditing}
               {...register("gender")}
             >
