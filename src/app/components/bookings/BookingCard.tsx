@@ -117,7 +117,7 @@ const BookingCard = ({
   const nights = Math.max(
     Math.ceil(
       (new Date(departure).getTime() - new Date(arrival).getTime()) /
-        86_400_000,
+      86_400_000,
     ) || 0,
     1,
   );
@@ -252,11 +252,10 @@ const BookingCard = ({
         />
       )}
       <aside
-        className={`${uiClassNames.surface} ${
-          mobileOpen
+        className={`${uiClassNames.surface} ${mobileOpen
             ? "fixed inset-x-0 bottom-0 z-[100] max-h-[88vh] overflow-y-auto rounded-b-none p-5 transition-transform duration-300 ease-out starting:translate-y-full"
             : "hidden"
-        } lg:sticky lg:top-24 lg:block lg:self-start lg:p-7 w-full shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-200/80 dark:border-white/10`}
+          } lg:sticky lg:top-24 lg:block lg:self-start lg:p-7 w-full shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-200/80 dark:border-white/10`}
       >
         <div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-4 lg:hidden">
           <h2 className="font-bold text-gray-900 dark:text-white text-lg">
@@ -296,9 +295,9 @@ const BookingCard = ({
               action={
                 message.type === "error"
                   ? {
-                      label: "Chọn lại ngày",
-                      onClick: () => setCalendarOpen(true),
-                    }
+                    label: "Chọn lại ngày",
+                    onClick: () => setCalendarOpen(true),
+                  }
                   : undefined
               }
               message={message.text}
@@ -307,7 +306,7 @@ const BookingCard = ({
           )}
 
           {/* Khung Ngày nhận / Ngày trả phòng & Số khách */}
-          <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/15 bg-white dark:bg-slate-900/50 shadow-sm">
+          <div className="relative rounded-2xl border border-gray-200 dark:border-white/15 bg-white dark:bg-slate-900/50 shadow-sm">
             <BookingDateSelector
               checkIn={arrival}
               checkOut={departure}
@@ -325,7 +324,7 @@ const BookingCard = ({
             />
 
             {/* Số khách */}
-            <div className="p-3">
+            <div className="p-3 rounded-b-2xl">
               <label className="block">
                 <span className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 mb-1">
                   Khách

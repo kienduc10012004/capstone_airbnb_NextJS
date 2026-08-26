@@ -337,7 +337,7 @@ const BookingDateSelector = ({
     <div className="relative" ref={containerRef}>
       {/* Khung Trigger Nhận phòng / Trả phòng */}
       <div
-        className={`grid grid-cols-2 divide-x divide-gray-200 dark:divide-white/10 border-b border-gray-200 dark:border-white/10 cursor-pointer transition-colors ${
+        className={`grid grid-cols-2 divide-x divide-gray-200 dark:divide-white/10 border-b border-gray-200 dark:border-white/10 cursor-pointer transition-colors rounded-t-2xl ${
           isCalendarOpen
             ? "bg-rose-50/40 dark:bg-rose-950/20"
             : "hover:bg-gray-50/70 dark:hover:bg-slate-800/40"
@@ -352,7 +352,7 @@ const BookingDateSelector = ({
           }
         }}
       >
-        <div className={`p-3 transition-colors ${!checkIn || !pickingEnd ? "ring-inset" : ""}`}>
+        <div className={`p-3 rounded-tl-2xl transition-colors ${!checkIn || !pickingEnd ? "ring-inset" : ""}`}>
           <span className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 flex items-center justify-between">
             <span>Nhận phòng</span>
             <i className="fa-solid fa-calendar-day text-[11px] text-rose-500" />
@@ -362,7 +362,7 @@ const BookingDateSelector = ({
           </p>
         </div>
 
-        <div className={`p-3 transition-colors ${pickingEnd ? "ring-inset" : ""}`}>
+        <div className={`p-3 rounded-tr-2xl transition-colors ${pickingEnd ? "ring-inset" : ""}`}>
           <span className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400 flex items-center justify-between">
             <span>Trả phòng</span>
             <i className="fa-solid fa-calendar-check text-[11px] text-rose-500" />
@@ -375,9 +375,9 @@ const BookingDateSelector = ({
 
       {/* POPUP LỊCH CHỌN NGÀY */}
       {isCalendarOpen && (
-        <div className="absolute top-full left-0 right-0 z-50 mt-2 sm:right-auto sm:w-[350px] md:w-[380px] lg:w-[410px] -translate-x-0 sm:left-1/2 sm:-translate-x-1/2">
+        <div className="absolute top-[calc(100%+8px)] left-0 right-0 z-[100] w-full min-w-[310px] sm:min-w-[350px] md:min-w-[380px] lg:w-[410px] sm:left-1/2 sm:-translate-x-1/2">
           <div
-            className={`${uiClassNames.popoverMotion} overflow-hidden rounded-3xl border border-gray-200/90 dark:border-white/10 bg-white dark:bg-[#1a2236] p-4 sm:p-5 shadow-2xl ring-1 ring-black/5 dark:ring-white/10`}
+            className={`${uiClassNames.popoverMotion} overflow-hidden rounded-3xl border border-gray-200/90 dark:border-white/10 bg-white dark:bg-[#1a2236] p-4 sm:p-5 shadow-2xl ring-1 ring-black/10 dark:ring-white/10`}
           >
             {/* Header Hướng dẫn & Trạng thái */}
             <div className="mb-4 flex flex-col items-center gap-1.5 border-b border-gray-100 dark:border-white/10 pb-3.5">
