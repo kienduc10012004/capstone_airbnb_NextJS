@@ -19,10 +19,11 @@ const RoomLocationCard = ({
   const locationDescription = location
     ? `${location.tinhThanh}, ${location.quocGia}`
     : `Mã vị trí: ${roomLocationId}`;
+
   const content = (
     <>
       <div
-        className={`relative min-h-64 overflow-hidden ${uiClassNames.locationImageSweep}`}
+        className={`relative min-h-60 sm:min-h-52 overflow-hidden ${uiClassNames.locationImageSweep}`}
       >
         {imageSource ? (
           <Image
@@ -33,29 +34,30 @@ const RoomLocationCard = ({
             src={imageSource}
           />
         ) : (
-          <div className="grid h-full min-h-64 place-items-center bg-gradient-to-br from-gray-100 to-rose-50 text-5xl text-rose-300">
+          <div className="grid h-full min-h-52 place-items-center bg-gradient-to-br from-gray-100 to-rose-50 dark:from-slate-800 dark:to-slate-900 text-5xl text-rose-300">
             ⌖
           </div>
         )}
       </div>
-      <div className="flex flex-col justify-center p-6 sm:p-8">
-        <p className="text-lg font-semibold text-gray-950 transition-colors duration-300 group-hover:text-rose-500">
+      <div className="flex flex-col justify-center p-5 sm:p-6">
+        <p className="text-lg font-bold text-gray-950 dark:text-white transition-colors duration-300 group-hover:text-rose-500">
           {locationName}
         </p>
-        <p className="mt-2 text-sm leading-6 text-gray-600">
+        <p className="mt-1 text-sm leading-relaxed text-gray-500 dark:text-slate-400">
           {locationDescription}
         </p>
         {location && (
-          <span className="mt-5 text-sm font-semibold text-gray-900">
-            Xem địa điểm{" "}
-            <i aria-hidden="true" className="fa-solid fa-chevron-right" />
+          <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 group-hover:underline">
+            Xem thêm về địa điểm{" "}
+            <i aria-hidden="true" className="fa-solid fa-chevron-right text-[10px]" />
           </span>
         )}
       </div>
     </>
   );
+
   const className =
-    "group mt-5 grid grid-cols-1 overflow-hidden rounded-3xl border border-gray-200 bg-gray-50 sm:grid-cols-[1.5fr_1fr]";
+    "group mt-4 grid grid-cols-1 overflow-hidden rounded-2xl border border-gray-200/80 dark:border-white/10 bg-gray-50/70 dark:bg-slate-800/40 sm:grid-cols-[1.4fr_1fr] transition-all hover:border-rose-400/40";
 
   if (!location) {
     return <div className={className}>{content}</div>;
