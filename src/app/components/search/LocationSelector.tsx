@@ -85,10 +85,7 @@ const LocationSelector = ({
           onChange={(event) => setKeyword(event.target.value)}
         />
         {isDebouncing && (
-          <span className="flex items-center gap-1 text-xs text-rose-500 font-medium animate-pulse">
-            <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping" />
-            Đang tìm...
-          </span>
+          <i aria-hidden="true" className="fa-solid fa-circle-notch animate-spin text-xs text-rose-500" />
         )}
         {keyword && !isDebouncing && (
           <button
