@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getImageSource, getImageValidationMessage } from "@/app/lib/image";
 import { uiClassNames } from "@/app/lib/styles";
@@ -20,7 +20,17 @@ const DualImagePicker = ({
   onError,
 }: DualImagePickerProps) => {
   const [mode, setMode] = useState<"file" | "url">("file");
-  const [urlInput, setUrlInput] = useState(previewUrl && !previewUrl.startsWith("blob:") ? previewUrl : "");
+  const [urlInput, setUrlInput] = useState<string>(() =>
+    previewUrl && !previewUrl.startsWith("blob:") ? previewUrl : "",
+  );
+
+  useEffect(() => {
+    if (previewUrl && !previewUrl.startsWith("blob:")) {
+      setUrlInput(previewUrl);
+    } else if (!previewUrl) {
+      setUrlInput("");
+    }
+  }, [previewUrl]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -37,7 +47,7 @@ const DualImagePicker = ({
   };
 
   const handleUrlInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
+    const val = e.target.value ?? "";
     setUrlInput(val);
     onUrlChange(val);
   };
@@ -67,7 +77,6 @@ const DualImagePicker = ({
             }`}
             onClick={() => {
               setMode("file");
-              setUrlInput("");
             }}
           >
             <i className="fa-solid fa-file-arrow-up" />
@@ -92,8 +101,9 @@ const DualImagePicker = ({
       </div>
 
       {mode === "file" ? (
-        <div>
+        <div key="file-mode-container">
           <input
+            key="file-input-element"
             accept="image/*"
             className="block w-full text-xs text-gray-500 dark:text-slate-400 file:mr-3 file:rounded-xl file:border-0 file:bg-rose-50 dark:file:bg-rose-950/40 file:px-4 file:py-2 file:text-xs file:font-bold file:text-rose-600 dark:file:text-rose-400 hover:file:bg-rose-100 cursor-pointer"
             type="file"
@@ -104,8 +114,9 @@ const DualImagePicker = ({
           </p>
         </div>
       ) : (
-        <div>
+        <div key="url-mode-container">
           <input
+            key="url-input-element"
             className={`${uiClassNames.field}`}
             placeholder="https://images.unsplash.com/..."
             type="url"
@@ -137,10 +148,10 @@ const DualImagePicker = ({
           <button
             type="button"
             aria-label="Xóa ảnh"
-            className="absolute top-2 right-2 grid h-7 w-7 place-items-center rounded-full bg-gray-900/70 hover:bg-red-600 text-white text-xs font-bold transition-all shadow-md"
+            className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-gray-900/75 hover:bg-red-600 text-white text-xs font-bold transition-all shadow-md"
             onClick={handleClear}
           >
-            ×
+            <i className="fa-solid fa-xmark text-xs" />
           </button>
         </div>
       )}
