@@ -13,7 +13,6 @@ const LocationSearchBar = ({ initialKeyword = "" }: LocationSearchBarProps) => {
   const [keyword, setKeyword] = useState(initialKeyword);
   const [isDebouncing, setIsDebouncing] = useState(false);
 
-  // Debouncing 2s khi người dùng gõ từ khóa
   useEffect(() => {
     if (keyword === initialKeyword) return;
     setIsDebouncing(true);
@@ -52,7 +51,11 @@ const LocationSearchBar = ({ initialKeyword = "" }: LocationSearchBarProps) => {
       onSubmit={handleSubmit}
     >
       <span aria-hidden="true" className="text-base text-rose-500 shrink-0 mr-3">
-        <i className="fa-solid fa-magnifying-glass" />
+        {isDebouncing ? (
+          <i className="fa-solid fa-circle-notch animate-spin text-sm" />
+        ) : (
+          <i className="fa-solid fa-magnifying-glass text-sm" />
+        )}
       </span>
       <input
         className="w-full bg-transparent text-sm font-medium text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-slate-500 outline-none"
@@ -60,13 +63,7 @@ const LocationSearchBar = ({ initialKeyword = "" }: LocationSearchBarProps) => {
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}
       />
-      {isDebouncing && (
-        <span className="flex shrink-0 items-center gap-1.5 text-xs font-semibold text-rose-500 dark:text-rose-400 animate-pulse ml-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping" />
-          Đang tìm...
-        </span>
-      )}
-      {keyword && !isDebouncing && (
+      {keyword && (
         <button
           aria-label="Xóa từ khóa"
           className="ml-2 grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-bold text-gray-400 dark:text-slate-500 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-700 dark:hover:text-white transition-colors"
