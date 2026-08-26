@@ -32,31 +32,21 @@ type BookingHistoryProps = {
   userId: number;
 };
 
-type TripStatusFilter = "all" | "upcoming" | "urgent" | "in_progress" | "completed";
+type TripStatusFilter = "all" | "upcoming" | "in_progress" | "completed";
 
-// Tính thời gian còn lại (giờ) từ hiện tại đến lúc nhận phòng (quy ước 14h00)
-const getHoursUntilCheckIn = (ngayDen: string) => {
-  const checkInDate = new Date(ngayDen);
-  if (!ngayDen.includes("T")) {
-    checkInDate.setHours(14, 0, 0, 0);
-  }
-  const now = new Date();
-  return (checkInDate.getTime() - now.getTime()) / (1000 * 60 * 60);
-};
-
-// Xác định mã trạng thái chuyến đi
+// Xác định trạng thái chuyến đi theo ngày thực tế (chuẩn Backend)
 const getTripStatusKey = (
   ngayDen: string,
   ngayDi: string,
-): "upcoming" | "urgent" | "in_progress" | "completed" => {
-  const isCompleted = new Date(ngayDi).getTime() < Date.now();
-  if (isCompleted) return "completed";
-  const hoursUntilCheckIn = getHoursUntilCheckIn(ngayDen);
-  if (hoursUntilCheckIn <= 0) return "in_progress";
-  if (hoursUntilCheckIn < 12) return "urgent";
+): "upcoming" | "in_progress" | "completed" => {
+  const todayStr = formatDateForInput(new Date());
+  const checkInStr = (ngayDen || "").slice(0, 10);
+  const checkOutStr = (ngayDi || "").slice(0, 10);
+
+  if (checkOutStr < todayStr) return "completed";
+  if (checkInStr <= todayStr && todayStr <= checkOutStr) return "in_progress";
   return "upcoming";
 };
-
 
 const statusTabs: {
   icon: string;
@@ -64,9 +54,8 @@ const statusTabs: {
   label: string;
 }[] = [
   { icon: "fa-solid fa-list-check", key: "all", label: "Tất cả" },
-  { icon: "fa-solid fa-plane-departure", key: "upcoming", label: "Sắp khởi hành" },
-  { icon: "fa-solid fa-clock-rotate-left", key: "urgent", label: "Sắp nhận phòng (<12h)" },
-  { icon: "fa-solid fa-house-user", key: "in_progress", label: "Đang lưu trú" },
+  { icon: "fa-solid fa-plane-departure", key: "upcoming", label: "Sắp tới" },
+  { icon: "fa-solid fa-house-user", key: "in_progress", label: "Đang diễn ra" },
   { icon: "fa-solid fa-circle-check", key: "completed", label: "Đã hoàn thành" },
 ];
 
@@ -125,9 +114,6 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
     ).length,
     upcoming: bookings.filter(
       (b) => getTripStatusKey(b.ngayDen, b.ngayDi) === "upcoming",
-    ).length,
-    urgent: bookings.filter(
-      (b) => getTripStatusKey(b.ngayDen, b.ngayDi) === "urgent",
     ).length,
   };
 
@@ -197,8 +183,8 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
 
       const response = await updateBooking(editing.id, {
         ...editing,
-        ngayDen: new Date(parsed.data.ngayDen).toISOString(),
-        ngayDi: new Date(parsed.data.ngayDi).toISOString(),
+        ngayDen: new Date(`${parsed.data.ngayDen}T00:00:00`).toISOString(),
+        ngayDi: new Date(`${parsed.data.ngayDi}T00:00:00`).toISOString(),
         soLuongKhach: parsed.data.soLuongKhach,
       });
 
@@ -221,22 +207,8 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
   };
 
   //==== Hủy chuyến đi ====
-  const confirmCancel = async () => {
-    if (!deletingBookingId) return;
-
-    const targetBooking = bookings.find((b) => b.id === deletingBookingId);
-    if (targetBooking) {
-      const hoursUntilCheckIn = getHoursUntilCheckIn(targetBooking.ngayDen);
-      if (hoursUntilCheckIn < 12) {
-        setMessage({
-          text: "Không thể hủy phòng khi còn dưới 12 tiếng nữa đến giờ nhận phòng (hoặc chuyến đi đã trôi qua).",
-          type: "error",
-        });
-        setDeletingBookingId(null);
-        return;
-      }
-    }
-
+  const remove = async () => {
+    if (deletingBookingId === null) return;
     setDeleting(true);
     try {
       await deleteBooking(deletingBookingId);
@@ -351,18 +323,16 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
           {filteredBookings.map((booking) => {
             const room = roomMap.get(booking.maPhong);
             const imageSource = getImageSource(room?.hinhAnh);
-            const hoursUntilCheckIn = getHoursUntilCheckIn(booking.ngayDen);
             const statusKey = getTripStatusKey(booking.ngayDen, booking.ngayDi);
-            const isTooLateToCancel = hoursUntilCheckIn < 12;
             const isCompleted = statusKey === "completed";
-            const isInProgress = statusKey === "in_progress";
+            const isUpcoming = statusKey === "upcoming";
 
             return (
               <article
                 className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_4px_20px_rgb(15_23_42/0.05)] transition-shadow hover:shadow-[0_8px_30px_rgb(15_23_42/0.1)] dark:border-white/10 dark:bg-[#1a2236] dark:shadow-[0_4px_20px_rgb(0_0_0/0.3)]"
                 key={booking.id}
               >
-                <div className="relative h-44 bg-gray-100">
+                <div className="relative h-48 bg-gray-100">
                   {imageSource ? (
                     <Image
                       fill
@@ -386,15 +356,9 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
                       </span>
                     )}
                     {statusKey === "in_progress" && (
-                      <span className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white shadow-md animate-pulse">
+                      <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold text-white shadow-md">
                         <i className="fa-solid fa-house-user mr-1" />
                         Đang lưu trú
-                      </span>
-                    )}
-                    {statusKey === "urgent" && (
-                      <span className="rounded-full bg-amber-500/90 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-                        <i className="fa-solid fa-clock-rotate-left mr-1" />
-                        Sắp nhận phòng (&lt;12h)
                       </span>
                     )}
                     {statusKey === "upcoming" && (
@@ -407,7 +371,7 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
                 </div>
 
                 <div className="p-5">
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-1">
                     {room?.tenPhong || `Phòng #${booking.maPhong}`}
                   </h3>
                   {room && (
@@ -420,12 +384,13 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
                     {new Date(booking.ngayDi).toLocaleDateString("vi-VN")} ({booking.soLuongKhach} khách)
                   </p>
 
-                  <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 dark:border-white/10">
+                  <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 dark:border-white/10">
                     <span className="text-sm font-bold text-gray-900 dark:text-white">
                       ${room?.giaTien || 0} <span className="text-xs font-normal text-gray-500 dark:text-slate-400">/ đêm</span>
                     </span>
+
                     <div className="flex items-center gap-2">
-                      {!isCompleted && !isInProgress && (
+                      {isUpcoming && (
                         <Button
                           variant="edit"
                           onClick={() => startEditing(booking.id)}
@@ -435,20 +400,22 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
                       )}
                       {!isCompleted && (
                         <Button
-                          disabled={isTooLateToCancel}
-                          title={
-                            isTooLateToCancel
-                              ? "Không thể hủy khi còn dưới 12 tiếng nữa đến giờ nhận phòng"
-                              : undefined
-                          }
                           variant="delete"
                           onClick={() => setDeletingBookingId(booking.id)}
                         >
                           Hủy chuyến
                         </Button>
                       )}
+                      {isCompleted && (
+                        <Link
+                          className="rounded-xl border border-gray-300 dark:border-white/20 bg-white dark:bg-slate-800 px-3 py-1.5 text-xs font-bold text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors shadow-xs"
+                          href={`/rooms/${booking.maPhong}`}
+                        >
+                          Đặt lại
+                        </Link>
+                      )}
                       <Link
-                        className="text-xs font-semibold text-rose-600 hover:underline"
+                        className="rounded-xl px-2.5 py-1.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
                         href={`/rooms/${booking.maPhong}`}
                       >
                         Xem phòng
@@ -498,14 +465,18 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
                 className={`${uiClassNames.field} mt-1.5`}
                 defaultValue={editing.soLuongKhach}
                 max={roomMap.get(editing.maPhong)?.khach || 10}
-                min="1"
+                min={1}
                 name="soLuongKhach"
                 type="number"
               />
             </label>
-            <div className="flex justify-end gap-2">
-              <Button variant="secondary" onClick={() => setEditing(null)}>
-                Đóng
+            <div className="flex justify-end gap-2 border-t border-gray-100 pt-3 dark:border-white/10">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setEditing(null)}
+              >
+                Hủy
               </Button>
               <Button loading={saving} type="submit" variant="edit">
                 Lưu thay đổi
@@ -515,15 +486,14 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
         )}
       </Modal>
 
-      {/* Confirmation Dialog Hủy chuyến */}
       <DeleteConfirmDialog
         confirmLabel="Hủy chuyến"
-        description="Chuyến đi này sẽ bị hủy khỏi tài khoản của bạn. Lưu ý: Chỉ được phép hủy trước giờ nhận phòng từ 12 tiếng trở lên."
+        description="Bạn có chắc muốn hủy chuyến đi này không? Thao tác này không thể hoàn tác."
         loading={deleting}
-        open={Boolean(deletingBookingId)}
-        title="Xác nhận hủy chuyến"
+        open={deletingBookingId !== null}
+        title="Hủy chuyến đi"
         onCancel={() => setDeletingBookingId(null)}
-        onConfirm={() => void confirmCancel()}
+        onConfirm={remove}
       />
     </section>
   );
