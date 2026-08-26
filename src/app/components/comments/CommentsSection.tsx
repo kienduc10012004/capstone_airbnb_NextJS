@@ -75,10 +75,13 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
     register,
     reset,
     setValue,
+    watch,
   } = useForm<CommentFormData>({
     resolver: zodResolver(commentSchema),
     defaultValues: { noiDung: "", saoBinhLuan: 5 },
   });
+
+  const selectedStars = watch("saoBinhLuan") || 5;
 
   const averageRating = useMemo(() => {
     if (!comments.length) return 0;
