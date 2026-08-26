@@ -36,6 +36,16 @@ export const formatShortDate = (value: string) => {
   return DATE_FORMATTER.format(fromDateKey(value));
 };
 
+export const formatDisplayDate = (value: string) => {
+  if (!value) return "";
+  const parts = value.split("-");
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+  }
+  return value;
+};
+
 export const normalizeVietnameseSearch = (value?: string | null): string => {
   if (!value) return "";
   return value

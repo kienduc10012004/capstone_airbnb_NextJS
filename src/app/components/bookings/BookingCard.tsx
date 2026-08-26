@@ -7,12 +7,14 @@ import { useForm, useWatch } from "react-hook-form";
 import Button from "@/app/components/ui/Button";
 import Modal from "@/app/components/ui/Modal";
 import StatusMessage from "@/app/components/ui/StatusMessage";
+import BookingDateSelector from "@/app/components/bookings/BookingDateSelector";
 import {
   createBooking,
   getApiErrorMessage,
   getBookings,
   getRoomById,
 } from "@/app/lib/api";
+import type { ApiBooking } from "@/app/lib/api/bookings";
 import { OPEN_SIGN_IN_EVENT } from "@/app/lib/auth-events";
 import { validateBookingBusinessRules } from "@/app/lib/booking-availability";
 import { formatDateForInput } from "@/app/lib/date";
@@ -65,6 +67,25 @@ const BookingCard = ({
     type: "error" | "success";
   } | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [existingBookings, setExistingBookings] = useState<ApiBooking[]>([]);
+
+  // Tải danh sách booking của hệ thống khi mount để phát hiện ngày đã kín
+  useEffect(() => {
+    let active = true;
+    getBookings()
+      .then((res) => {
+        if (active && Array.isArray(res?.content)) {
+          setExistingBookings(res.content);
+        }
+      })
+      .catch(() => {
+        if (active) setExistingBookings([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // State popup xác nhận
   const [pendingFormData, setPendingFormData] =
@@ -78,6 +99,7 @@ const BookingCard = ({
     formState: { errors },
     handleSubmit,
     register,
+    setValue,
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
@@ -270,36 +292,37 @@ const BookingCard = ({
           onSubmit={handleSubmit(handlePreSubmit)}
         >
           {message && (
-            <StatusMessage message={message.text} type={message.type} />
+            <StatusMessage
+              action={
+                message.type === "error"
+                  ? {
+                      label: "Chọn lại ngày",
+                      onClick: () => setCalendarOpen(true),
+                    }
+                  : undefined
+              }
+              message={message.text}
+              type={message.type}
+            />
           )}
 
-          {/* Khung Ngày nhận / Ngày trả phòng */}
+          {/* Khung Ngày nhận / Ngày trả phòng & Số khách */}
           <div className="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/15 bg-white dark:bg-slate-900/50 shadow-sm">
-            <div className="grid grid-cols-2 divide-x divide-gray-200 dark:divide-white/10 border-b border-gray-200 dark:border-white/10">
-              <label className="block p-3">
-                <span className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
-                  Nhận phòng
-                </span>
-                <input
-                  className="mt-1 w-full bg-transparent text-xs sm:text-sm font-bold text-gray-900 dark:text-white outline-none cursor-pointer [color-scheme:light_dark]"
-                  min={formatDateForInput(new Date())}
-                  type="date"
-                  {...register("ngayDen")}
-                />
-              </label>
-
-              <label className="block p-3">
-                <span className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
-                  Trả phòng
-                </span>
-                <input
-                  className="mt-1 w-full bg-transparent text-xs sm:text-sm font-bold text-gray-900 dark:text-white outline-none cursor-pointer [color-scheme:light_dark]"
-                  min={arrival}
-                  type="date"
-                  {...register("ngayDi")}
-                />
-              </label>
-            </div>
+            <BookingDateSelector
+              checkIn={arrival}
+              checkOut={departure}
+              existingBookings={existingBookings}
+              isOpen={calendarOpen}
+              roomId={roomId}
+              onOpenChange={setCalendarOpen}
+              onSelectRange={(range) => {
+                setValue("ngayDen", range.checkIn, { shouldValidate: true });
+                setValue("ngayDi", range.checkOut, { shouldValidate: true });
+                if (range.checkIn && range.checkOut) {
+                  setMessage(null);
+                }
+              }}
+            />
 
             {/* Số khách */}
             <div className="p-3">
