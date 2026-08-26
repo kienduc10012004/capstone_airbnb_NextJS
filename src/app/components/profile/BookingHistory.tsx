@@ -57,13 +57,6 @@ const getTripStatusKey = (
   return "upcoming";
 };
 
-const formatTimeLabel = (isoString: string) => {
-  if (!isoString.includes("T")) return "";
-  const d = new Date(isoString);
-  const hours = String(d.getHours()).padStart(2, "0");
-  const mins = String(d.getMinutes()).padStart(2, "0");
-  return ` (${hours}:${mins})`;
-};
 
 const statusTabs: {
   icon: string;
@@ -423,8 +416,8 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
                     </p>
                   )}
                   <p className="mt-2 text-sm font-medium text-rose-600 dark:text-rose-400">
-                    📅 {new Date(booking.ngayDen).toLocaleDateString("vi-VN")}{formatTimeLabel(booking.ngayDen)} –{" "}
-                    {new Date(booking.ngayDi).toLocaleDateString("vi-VN")}{formatTimeLabel(booking.ngayDi)} ({booking.soLuongKhach} khách)
+                    📅 {new Date(booking.ngayDen).toLocaleDateString("vi-VN")} –{" "}
+                    {new Date(booking.ngayDi).toLocaleDateString("vi-VN")} ({booking.soLuongKhach} khách)
                   </p>
 
                   <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 dark:border-white/10">
