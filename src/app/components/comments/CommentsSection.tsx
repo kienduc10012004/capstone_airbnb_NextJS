@@ -297,59 +297,91 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
 
       {reviewFormOpen && (
         <form
-          className={`${uiClassNames.surface} mt-4 space-y-4 p-5`}
+          className="mt-6 rounded-2xl border border-gray-200/90 dark:border-white/10 bg-white dark:bg-[#1a2236] p-5 sm:p-6 shadow-sm space-y-4"
           onSubmit={handleSubmit(submit)}
         >
           {message && (
             <StatusMessage message={message.text} type={message.type} />
           )}
-          <div className="grid gap-4 sm:grid-cols-[140px_1fr]">
-            <label className="text-sm font-medium text-gray-700">
-              Số sao
-              <select
-                className={`${uiClassNames.field} mt-1.5`}
-                {...register("saoBinhLuan", { valueAsNumber: true })}
-              >
-                {[5, 4, 3, 2, 1].map((star) => (
-                  <option key={star} value={star}>
-                    {star} sao
-                  </option>
+
+          {/* Header chọn số sao trực quan, cân đối */}
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-gray-100 dark:border-white/10 pb-4">
+            <div>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                {editingId ? "Chỉnh sửa đánh giá" : "Viết đánh giá mới"}
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+                Chọn số sao và chia sẻ cảm nhận trải nghiệm thực tế của bạn
+              </p>
+            </div>
+
+            {/* Bộ chọn sao tương tác */}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-gray-600 dark:text-slate-300">Đánh giá:</span>
+              <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-500/30 rounded-xl px-3 py-1.5 shadow-xs">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    className="text-lg transition-transform hover:scale-125 focus:outline-none cursor-pointer"
+                    onClick={() => setValue("saoBinhLuan", star)}
+                    title={`${star} sao`}
+                  >
+                    <span className={star <= selectedStars ? "text-amber-500" : "text-gray-300 dark:text-slate-600"}>
+                      ★
+                    </span>
+                  </button>
                 ))}
-              </select>
-            </label>
-            <label className="text-sm font-medium text-gray-700">
-              Nội dung
-              <textarea
-                className={`${uiClassNames.field} mt-1.5 min-h-24 resize-y`}
-                placeholder="Chia sẻ điều bạn thích về nơi ở này"
-                {...register("noiDung")}
-              />
-              {errors.noiDung && (
-                <span className="mt-1 block text-xs text-red-500">
-                  {errors.noiDung.message}
+                <span className="ml-1.5 text-xs font-bold text-amber-700 dark:text-amber-300">
+                  {selectedStars}/5 sao
                 </span>
-              )}
-            </label>
+              </div>
+              <input type="hidden" {...register("saoBinhLuan", { valueAsNumber: true })} />
+            </div>
           </div>
-          <div className="flex flex-wrap justify-end gap-2">
-            {editingId && (
+
+          {/* Ô nhập nội dung trải rộng toàn bộ */}
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-slate-300 mb-1.5">
+              Nội dung đánh giá <span className="text-rose-500">*</span>
+            </label>
+            <textarea
+              className={`${uiClassNames.field} min-h-24 w-full resize-y text-sm`}
+              placeholder="Chia sẻ điều bạn thích về nơi ở này..."
+              {...register("noiDung")}
+            />
+            {errors.noiDung && (
+              <span className="mt-1 block text-xs font-semibold text-red-500">
+                {errors.noiDung.message}
+              </span>
+            )}
+          </div>
+
+          {/* Nút hành động cân đối */}
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-gray-100 dark:border-white/10">
+            <p className="text-xs text-gray-400 dark:text-slate-500">
+              Đánh giá của bạn sẽ được hiển thị công khai
+            </p>
+            <div className="flex items-center justify-end gap-2.5">
               <Button
                 variant="secondary"
+                type="button"
                 onClick={() => {
                   setEditingId(null);
                   reset({ noiDung: "", saoBinhLuan: 5 });
+                  setReviewFormOpen(false);
                 }}
               >
-                Hủy sửa
+                Hủy
               </Button>
-            )}
-            <Button
-              loading={isSubmitting}
-              type="submit"
-              variant={editingId ? "edit" : "create"}
-            >
-              {editingId ? "Lưu thay đổi" : "Gửi đánh giá"}
-            </Button>
+              <Button
+                loading={isSubmitting}
+                type="submit"
+                variant={editingId ? "edit" : "create"}
+              >
+                {editingId ? "Lưu thay đổi" : "Gửi đánh giá"}
+              </Button>
+            </div>
           </div>
         </form>
       )}
