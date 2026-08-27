@@ -23,6 +23,7 @@ import {
   useCreateCommentMutation,
   useUpdateCommentMutation,
   useDeleteCommentMutation,
+  useUserBookingsQuery,
 } from "@/app/hooks/useComments";
 
 const COMMENTS_BATCH_SIZE = 6;
@@ -55,6 +56,17 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
   const createMutation = useCreateCommentMutation(roomId);
   const updateMutation = useUpdateCommentMutation(roomId);
   const deleteMutation = useDeleteCommentMutation(roomId);
+  const user = useAuthStore((state) => state.user);
+  const { data: userBookings } = useUserBookingsQuery(user?.id);
+
+  const hasBookedRoom = useMemo(() => {
+    if (!user || !userBookings) return false;
+    return userBookings.some((booking) => booking.maPhong === roomId);
+  }, [user, userBookings, roomId]);
+
+  const canWriteReview = Boolean(
+    user && (user.role === "ADMIN" || hasBookedRoom),
+  );
 
   const comments = useMemo(() => {
     return sortCommentsNewestFirst(fetchedComments || initialComments);
@@ -75,7 +87,6 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
     text: string;
     type: "error" | "success";
   } | null>(null);
-  const user = useAuthStore((state) => state.user);
   const showToast = useToastStore((state) => state.showToast);
   const {
     formState: { errors, isSubmitting },
@@ -167,6 +178,14 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
     if (!user) {
       setMessage({
         text: "Vui lòng đăng nhập để gửi đánh giá.",
+        type: "error",
+      });
+      return;
+    }
+
+    if (!canWriteReview && !editingId) {
+      setMessage({
+        text: "Bạn cần từng đặt phòng này để có thể viết đánh giá.",
         type: "error",
       });
       return;
@@ -278,10 +297,31 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
         </div>
       )}
 
-      <div className="mt-6 flex justify-end">
+      <div className="mt-6 flex flex-col items-end gap-2">
+        {!canWriteReview && user && (
+          <p className="text-xs font-medium text-rose-500">
+            * Chỉ khách hàng đã từng đặt phòng này mới có thể viết đánh giá.
+          </p>
+        )}
         <Button
           variant={reviewFormOpen ? "secondary" : "create"}
-          onClick={() => setReviewFormOpen((current) => !current)}
+          onClick={() => {
+            if (!user) {
+              setMessage({
+                text: "Vui lòng đăng nhập để gửi đánh giá.",
+                type: "error",
+              });
+              return;
+            }
+            if (!canWriteReview && !editingId) {
+              setMessage({
+                text: "Bạn cần từng đặt phòng này để có thể viết đánh giá.",
+                type: "error",
+              });
+              return;
+            }
+            setReviewFormOpen((current) => !current);
+          }}
         >
           {reviewFormOpen ? "Đóng biểu mẫu" : "Viết đánh giá"}
         </Button>
