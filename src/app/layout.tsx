@@ -5,6 +5,7 @@ import { Suspense } from "react";
 
 import AuthInitializer from "@/app/components/auth/AuthInitializer";
 import FavoritesInitializer from "@/app/components/favorites/FavoritesInitializer";
+import BackToTopButton from "@/app/components/ui/BackToTopButton";
 import PinkRouteLoader from "@/app/components/ui/PinkRouteLoader";
 import ToastViewport from "@/app/components/ui/ToastViewport";
 import ReactQueryProvider from "@/app/providers/ReactQueryProvider";
@@ -65,6 +66,7 @@ export default function RootLayout({
           <AuthInitializer />
           <FavoritesInitializer />
           <ToastViewport />
+          <BackToTopButton />
           <Suspense fallback={null}>
             <PinkRouteLoader />
           </Suspense>
