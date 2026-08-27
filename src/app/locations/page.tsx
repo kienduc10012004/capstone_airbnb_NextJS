@@ -4,9 +4,10 @@ import Footer from "@/app/components/Footer";
 import Header from "@/app/components/Header";
 import LocationCard from "@/app/components/locations/LocationCard";
 import LocationSearchBar from "@/app/components/locations/LocationSearchBar";
+import { normalizeVietnameseSearch } from "@/app/components/search/date-utils";
 import EmptyState from "@/app/components/ui/EmptyState";
 import Pagination from "@/app/components/ui/Pagination";
-import { getLocationsPaged } from "@/app/lib/api";
+import { getLocations, getLocationsPaged, type ApiLocation } from "@/app/lib/api";
 import { uiClassNames } from "@/app/lib/styles";
 
 export const dynamic = "force-dynamic";
@@ -29,17 +30,39 @@ export default async function LocationsPage({
   const currentPage = Math.max(Number(query.page) || 1, 1);
   const keyword = query.keyword?.trim() ?? "";
 
-  let response: Awaited<ReturnType<typeof getLocationsPaged>> | null = null;
+  let locations: ApiLocation[] = [];
+  let totalRow = 0;
+
   try {
-    response = await getLocationsPaged({
+    const response = await getLocationsPaged({
       keyword: keyword || undefined,
       pageIndex: currentPage,
       pageSize: PAGE_SIZE,
     });
+
+    locations = response.content.data;
+    totalRow = response.content.totalRow;
+
+    // Fallback: Khi tìm kiếm có từ khóa nhưng API không khớp (do từ khóa gõ không dấu, vd: "hon rua")
+    if (locations.length === 0 && keyword) {
+      const allResponse = await getLocations();
+      const normKey = normalizeVietnameseSearch(keyword);
+      const filtered = (allResponse.content || []).filter((loc) => {
+        const ten = normalizeVietnameseSearch(loc.tenViTri);
+        const tinh = normalizeVietnameseSearch(loc.tinhThanh);
+        const quoc = normalizeVietnameseSearch(loc.quocGia);
+        return (
+          ten.includes(normKey) ||
+          tinh.includes(normKey) ||
+          quoc.includes(normKey)
+        );
+      });
+
+      totalRow = filtered.length;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      locations = filtered.slice(start, start + PAGE_SIZE);
+    }
   } catch {
-    response = null;
-  }
-  if (!response) {
     return (
       <div className="flex min-h-screen flex-col">
         <Header />
@@ -55,7 +78,6 @@ export default async function LocationsPage({
     );
   }
 
-  const { data: locations, totalRow } = response.content;
   const totalPages = Math.max(Math.ceil(totalRow / PAGE_SIZE), 1);
   const pageHref = (page: number) => {
     const params = new URLSearchParams({ page: String(page) });

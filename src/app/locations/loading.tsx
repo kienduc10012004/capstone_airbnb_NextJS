@@ -7,8 +7,8 @@ export default function LocationsLoading() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className={`${uiClassNames.appContainer} flex-1 py-10`}>
-        <LoadingState label="Đang tải điểm đến..." variant="cards" />
+      <main className={`${uiClassNames.appContainer} flex-1 py-10 flex items-center justify-center`}>
+        <LoadingState label="Đang tải..." />
       </main>
       <Footer />
     </div>

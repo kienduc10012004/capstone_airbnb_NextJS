@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { Suspense } from "react";
+
 import AuthInitializer from "@/app/components/auth/AuthInitializer";
 import FavoritesInitializer from "@/app/components/favorites/FavoritesInitializer";
+import PinkRouteLoader from "@/app/components/ui/PinkRouteLoader";
 import ToastViewport from "@/app/components/ui/ToastViewport";
+import ReactQueryProvider from "@/app/providers/ReactQueryProvider";
 import { uiClassNames } from "@/app/lib/styles";
 
 import "./globals.css";
@@ -57,10 +61,15 @@ export default function RootLayout({
         suppressHydrationWarning
         className={`flex min-h-full flex-col bg-white text-gray-900 selection:bg-rose-500/20 ${uiClassNames.globalInteractions}`}
       >
-        <AuthInitializer />
-        <FavoritesInitializer />
-        <ToastViewport />
-        {children}
+        <ReactQueryProvider>
+          <AuthInitializer />
+          <FavoritesInitializer />
+          <ToastViewport />
+          <Suspense fallback={null}>
+            <PinkRouteLoader />
+          </Suspense>
+          {children}
+        </ReactQueryProvider>
       </body>
     </html>
   );

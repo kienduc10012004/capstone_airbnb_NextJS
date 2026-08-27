@@ -10,17 +10,20 @@ import EmptyState from "@/app/components/ui/EmptyState";
 import ExpandableText from "@/app/components/ui/ExpandableText";
 import StatusMessage from "@/app/components/ui/StatusMessage";
 import {
-  createComment,
-  deleteComment,
   getApiErrorMessage,
-  getCommentsByRoom,
-  updateComment,
   type ApiComment,
 } from "@/app/lib/api";
 import { commentSchema, type CommentFormData } from "@/app/lib/schemas";
 import { uiClassNames } from "@/app/lib/styles";
 import { useAuthStore } from "@/app/store/useAuthStore";
 import { useToastStore } from "@/app/store/useToastStore";
+
+import {
+  useCommentsQuery,
+  useCreateCommentMutation,
+  useUpdateCommentMutation,
+  useDeleteCommentMutation,
+} from "@/app/hooks/useComments";
 
 const COMMENTS_BATCH_SIZE = 6;
 
@@ -48,14 +51,19 @@ type CommentsSectionProps = {
 };
 
 const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
-  const [comments, setComments] = useState<ApiComment[]>(() =>
-    sortCommentsNewestFirst(initialComments),
-  );
+  const { data: fetchedComments } = useCommentsQuery(roomId);
+  const createMutation = useCreateCommentMutation(roomId);
+  const updateMutation = useUpdateCommentMutation(roomId);
+  const deleteMutation = useDeleteCommentMutation(roomId);
+
+  const comments = useMemo(() => {
+    return sortCommentsNewestFirst(fetchedComments || initialComments);
+  }, [fetchedComments, initialComments]);
+
   const [editingId, setEditingId] = useState<number | null>(null);
   const [deletingCommentId, setDeletingCommentId] = useState<number | null>(
     null,
   );
-  const [deleting, setDeleting] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [reviewFormOpen, setReviewFormOpen] = useState(false);
   const [visibleCount, setVisibleCount] = useState(COMMENTS_BATCH_SIZE);
@@ -154,12 +162,6 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
     };
   }, [comments.length, visibleCount]);
 
-  //==== Đồng bộ đánh giá: tải lại danh sách và luôn sắp xếp bình luận mới nhất lên đầu ====
-  const refreshComments = async () => {
-    const response = await getCommentsByRoom(roomId);
-    setComments(sortCommentsNewestFirst(response.content));
-  };
-
   const submit = async (values: CommentFormData) => {
     setMessage(null);
     if (!user) {
@@ -182,11 +184,10 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
 
     try {
       if (editingId) {
-        await updateComment(editingId, payload);
+        await updateMutation.mutateAsync({ id: editingId, payload });
       } else {
-        await createComment(payload);
+        await createMutation.mutateAsync(payload);
       }
-      await refreshComments();
       reset({ noiDung: "", saoBinhLuan: 5 });
       setEditingId(null);
       setReviewFormOpen(false);
@@ -215,10 +216,8 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
   const confirmRemove = async () => {
     if (!deletingCommentId) return;
 
-    setDeleting(true);
     try {
-      await deleteComment(deletingCommentId);
-      await refreshComments();
+      await deleteMutation.mutateAsync(deletingCommentId);
       setMessage(null);
       showToast("Đã xóa bình luận.", "success");
     } catch (error) {
@@ -227,7 +226,6 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
         type: "error",
       });
     } finally {
-      setDeleting(false);
       setDeletingCommentId(null);
     }
   };
@@ -486,7 +484,7 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
       )}
       <DeleteConfirmDialog
         description="Bình luận này sẽ bị xóa vĩnh viễn khỏi phòng. Hành động này không thể hoàn tác."
-        loading={deleting}
+        loading={deleteMutation.isPending}
         open={Boolean(deletingCommentId)}
         title="Xóa bình luận"
         onCancel={() => setDeletingCommentId(null)}

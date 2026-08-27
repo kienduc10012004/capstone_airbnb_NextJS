@@ -52,7 +52,7 @@ const Button = ({
     {loading && (
       <span
         aria-hidden="true"
-        className="absolute h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent motion-reduce:animate-none"
+        className="absolute h-4 w-4 animate-spin rounded-full border-2 border-rose-200 border-r-rose-500 motion-reduce:animate-none"
       />
     )}
   </button>

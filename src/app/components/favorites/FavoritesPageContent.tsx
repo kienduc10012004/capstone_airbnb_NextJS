@@ -63,7 +63,7 @@ const FavoritesPageContent = () => {
   );
 
   if (!authHydrated || !favoritesHydrated) {
-    return <LoadingState label="Đang tải phòng yêu thích..." />;
+    return <LoadingState label="Đang tải..." />;
   }
 
   return (
@@ -82,7 +82,7 @@ const FavoritesPageContent = () => {
         </div>
 
         {loading ? (
-          <LoadingState label="Đang tải danh sách phòng..." variant="cards" />
+          <LoadingState label="Đang tải..." />
         ) : loadError ? (
           <div className="mt-8">
             <EmptyState

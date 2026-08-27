@@ -45,9 +45,9 @@ const AdminSearchBar = ({
       className={`relative flex items-center rounded-2xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#1a2236] px-4 py-2.5 shadow-sm transition-all focus-within:border-rose-500 focus-within:ring-4 focus-within:ring-rose-500/10 ${className}`}
     >
       {isDebouncing ? (
-        <i
+        <span
           aria-hidden="true"
-          className="fa-solid fa-circle-notch animate-spin text-rose-500 text-sm shrink-0 mr-3"
+          className="h-4 w-4 animate-spin rounded-full border-2 border-rose-200 border-r-rose-500 motion-reduce:animate-none shrink-0 mr-3"
         />
       ) : (
         <i

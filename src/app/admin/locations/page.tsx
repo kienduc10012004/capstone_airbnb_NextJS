@@ -19,11 +19,13 @@ import {
   createLocation,
   deleteLocation,
   getApiErrorMessage,
+  getLocations,
   getLocationsPaged,
   updateLocation,
   uploadLocationImage,
   type ApiLocation,
 } from "@/app/lib/api";
+import { normalizeVietnameseSearch } from "@/app/components/search/date-utils";
 import { locationSchema, type LocationFormData } from "@/app/lib/schemas";
 import { uiClassNames } from "@/app/lib/styles";
 import { getImageSource } from "@/app/lib/image";
@@ -74,9 +76,32 @@ export default function AdminLocationsPage() {
         pageIndex: page,
         pageSize: PAGE_SIZE,
       });
+
+      let pageData = response.content.data;
+      let totalCount = response.content.totalRow;
+
+      // Fallback cho từ khóa không dấu (vd: "hon rua")
+      if (pageData.length === 0 && searchKeyword.trim()) {
+        const allRes = await getLocations();
+        const normKey = normalizeVietnameseSearch(searchKeyword);
+        const filtered = (allRes.content || []).filter((loc) => {
+          const ten = normalizeVietnameseSearch(loc.tenViTri);
+          const tinh = normalizeVietnameseSearch(loc.tinhThanh);
+          const quoc = normalizeVietnameseSearch(loc.quocGia);
+          return (
+            ten.includes(normKey) ||
+            tinh.includes(normKey) ||
+            quoc.includes(normKey)
+          );
+        });
+        totalCount = filtered.length;
+        const start = (page - 1) * PAGE_SIZE;
+        pageData = filtered.slice(start, start + PAGE_SIZE);
+      }
+
       if (requestId !== latestRequestId.current) return;
-      setLocations(response.content.data);
-      setTotalRows(response.content.totalRow);
+      setLocations(pageData);
+      setTotalRows(totalCount);
       setCurrentPage(page);
     } catch (error) {
       if (requestId !== latestRequestId.current) return;
