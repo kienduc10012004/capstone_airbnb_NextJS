@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import AuthModal, { type AuthMode } from "@/app/components/auth/AuthModal";
 import MobileHeaderMenu from "@/app/components/header/MobileHeaderMenu";
@@ -47,6 +47,16 @@ const Header = () => {
   const hydrated = useAuthStore((state) => state.hydrated);
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
+
+  //==== Lọc danh sách menu: chỉ hiển thị Yêu thích & Hồ sơ khi đã đăng nhập ====
+  const visibleNavItems = useMemo(() => {
+    if (!hydrated || !user) {
+      return navigationItems.filter(
+        (item) => item.href !== "/favorites" && item.href !== "/profile",
+      );
+    }
+    return navigationItems;
+  }, [hydrated, user]);
 
   //==== Đồng bộ Header: quản lý session, menu responsive và thanh tìm kiếm thu gọn ====
   useEffect(() => {
@@ -238,7 +248,7 @@ const Header = () => {
             </Link>
 
             <nav className="hidden items-center rounded-full bg-gray-50 p-1 text-sm font-medium dark:bg-slate-800/60 lg:flex">
-              {navigationItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 const active = isNavigationItemActive(pathname, item.href);
                 return (
                   <Link
@@ -427,7 +437,7 @@ const Header = () => {
       <MobileHeaderMenu
         accountMenuOpen={mobileAccountMenuOpen}
         menuOpen={mobileMenuOpen}
-        navigationItems={navigationItems}
+        navigationItems={visibleNavItems}
         pathname={pathname}
         user={hydrated ? user : null}
         onClose={closeMobileMenu}

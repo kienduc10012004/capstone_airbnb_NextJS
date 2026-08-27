@@ -63,6 +63,7 @@ export const getStayDateRange = (
  * Công thức overlap chuẩn xác:
  * existingCheckIn < requestedCheckOut AND existingCheckOut > requestedCheckIn
  */
+
 export const hasBookingConflict = (
   bookings: ApiBooking[],
   roomId: number,
