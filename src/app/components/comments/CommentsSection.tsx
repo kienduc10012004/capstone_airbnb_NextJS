@@ -175,7 +175,7 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
     const current = comments.find((comment) => comment.id === editingId);
     const payload = {
       id: editingId ?? 0,
-      maNguoiBinhLuan: user.id,
+      maNguoiBinhLuan: current?.maNguoiBinhLuan ?? user.id,
       maPhong: roomId,
       ngayBinhLuan: current?.ngayBinhLuan ?? new Date().toISOString(),
       noiDung: values.noiDung,
