@@ -6,9 +6,12 @@ import { useEffect, useState } from "react";
 
 import AdminMobileMenu from "@/app/components/admin/AdminMobileMenu";
 import UserMenuAvatar from "@/app/components/auth/UserMenuAvatar";
+import ConfirmDialog from "@/app/components/ui/ConfirmDialog";
 import LoadingState from "@/app/components/ui/LoadingState";
 import ThemeToggle from "@/app/components/ui/ThemeToggle";
+import { clearSession } from "@/app/lib/session";
 import { useAuthStore } from "@/app/store/useAuthStore";
+import { useToastStore } from "@/app/store/useToastStore";
 
 const adminNavMenu = [
   { href: "/admin", icon: "fa-solid fa-chart-pie", label: "Tổng quan" },
@@ -35,8 +38,26 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const hydrated = useAuthStore((state) => state.hydrated);
   const user = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
+  const showToast = useToastStore((state) => state.showToast);
+
+  const handleLogout = () => {
+    clearSession();
+    setUser(null);
+    setMobileMenuOpen(false);
+    setLogoutConfirmOpen(false);
+    showToast("Đã đăng xuất khỏi tài khoản.", "success");
+    router.push("/");
+    router.refresh();
+  };
+
+  const requestLogout = () => {
+    setMobileMenuOpen(false);
+    setLogoutConfirmOpen(true);
+  };
 
   useEffect(() => {
     if (hydrated && user?.role !== "ADMIN") {
@@ -179,6 +200,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         open={mobileMenuOpen}
         pathname={pathname}
         onClose={() => setMobileMenuOpen(false)}
+        onLogout={requestLogout}
       />
 
       {/* Main content area */}
@@ -200,9 +222,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
             <ThemeToggle />
-            <div className="hidden sm:flex items-center gap-2 rounded-xl bg-gray-100 dark:bg-white/10 px-3 py-1.5 text-xs text-gray-500 dark:text-slate-300">
+            <div className="hidden lg:flex items-center gap-2 rounded-xl bg-gray-100 dark:bg-white/10 px-3 py-1.5 text-xs text-gray-500 dark:text-slate-300">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Hệ thống hoạt động
             </div>
@@ -222,12 +244,32 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
                 ADMIN
               </span>
             </Link>
+
+            {/* Logout button */}
+            <button
+              className="flex items-center gap-1.5 rounded-2xl border border-rose-200 dark:border-rose-500/30 bg-rose-50 dark:bg-rose-950/40 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-600 dark:hover:text-white transition-all shadow-xs"
+              title="Đăng xuất khỏi tài khoản Admin"
+              type="button"
+              onClick={requestLogout}
+            >
+              <i className="fa-solid fa-right-from-bracket text-xs" />
+              <span className="hidden sm:inline">Đăng xuất</span>
+            </button>
           </div>
         </header>
 
         {/* Page content */}
         <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
+
+      <ConfirmDialog
+        confirmLabel="Đăng xuất"
+        description="Bạn có chắc chắn muốn kết thúc phiên đăng nhập quản trị hiện tại?"
+        open={logoutConfirmOpen}
+        title="Xác nhận đăng xuất"
+        onCancel={() => setLogoutConfirmOpen(false)}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 };

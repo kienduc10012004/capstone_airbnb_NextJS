@@ -14,6 +14,7 @@ type AdminMobileMenuProps = {
   open: boolean;
   pathname: string;
   onClose: () => void;
+  onLogout: () => void;
 };
 
 const isAdminNavigationActive = (pathname: string, href: string) =>
@@ -23,6 +24,7 @@ const AdminMobileMenu = ({
   email,
   navigationItems,
   onClose,
+  onLogout,
   open,
   pathname,
 }: AdminMobileMenuProps) => {
@@ -78,15 +80,23 @@ const AdminMobileMenu = ({
           })}
         </nav>
 
-        <div className="mt-3 border-t border-white/10 pt-3">
+        <div className="mt-3 border-t border-white/10 pt-3 space-y-1">
           <Link
-            className="flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-sm text-gray-300 transition-colors duration-200 hover:bg-white/10 hover:text-white"
+            className="flex cursor-pointer items-center gap-3 rounded-xl px-4 py-2.5 text-sm text-gray-300 transition-colors duration-200 hover:bg-white/10 hover:text-white"
             href="/"
             onClick={onClose}
           >
             <i aria-hidden="true" className="fa-solid fa-chevron-left w-4" />
             Về trang người dùng
           </Link>
+          <button
+            className="flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-rose-400 transition-colors duration-200 hover:bg-rose-500/20 hover:text-rose-300"
+            type="button"
+            onClick={onLogout}
+          >
+            <i aria-hidden="true" className="fa-solid fa-right-from-bracket w-4" />
+            Đăng xuất
+          </button>
         </div>
       </div>
     </div>
