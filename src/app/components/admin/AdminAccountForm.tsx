@@ -16,7 +16,10 @@ import {
   uploadAvatar,
   type ApiUser,
 } from "@/app/lib/api";
-import { getImageSource, getImageValidationMessage } from "@/app/lib/image";
+import {
+  getImageValidationMessage,
+  getOptionalImageSource,
+} from "@/app/lib/image";
 import { profileSchema, type ProfileFormData } from "@/app/lib/schemas";
 import { updateSession } from "@/app/lib/session";
 import { uiClassNames } from "@/app/lib/styles";
@@ -156,7 +159,7 @@ const AdminAccountForm = ({ currentUser }: AdminAccountFormProps) => {
     );
   }
 
-  const avatarSource = getImageSource(user.avatar);
+  const avatarSource = getOptionalImageSource(user.avatar);
 
   return (
     <>

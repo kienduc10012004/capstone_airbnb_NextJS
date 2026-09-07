@@ -276,7 +276,9 @@ const Header = () => {
                   <span>Trang Admin</span>
                 </Link>
               )}
-              <ThemeToggle />
+              <div className="hidden lg:block">
+                <ThemeToggle />
+              </div>
               {hydrated && !user ? (
                 <div className="hidden items-center gap-2.5 lg:flex">
                   <button

@@ -17,7 +17,10 @@ import {
 } from "@/app/lib/api";
 import { profileSchema, type ProfileFormData } from "@/app/lib/schemas";
 import { updateSession } from "@/app/lib/session";
-import { getImageSource, getImageValidationMessage } from "@/app/lib/image";
+import {
+  getImageValidationMessage,
+  getOptionalImageSource,
+} from "@/app/lib/image";
 import { uiClassNames } from "@/app/lib/styles";
 import { formatBirthdayForInput, formatPhoneForInput } from "@/app/lib/user";
 import { useAuthStore } from "@/app/store/useAuthStore";
@@ -153,7 +156,7 @@ const ProfileDetails = ({ initialUser }: { initialUser: ApiUser }) => {
   if (loading) {
     return <LoadingState label="Đang tải hồ sơ..." variant="profile" />;
   }
-  const avatarSource = getImageSource(user.avatar);
+  const avatarSource = getOptionalImageSource(user.avatar);
 
   //==== Giao diện hồ sơ: hiển thị avatar, thông tin cá nhân và trạng thái biểu mẫu ====
   return (

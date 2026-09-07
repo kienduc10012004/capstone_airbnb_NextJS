@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import Button from "@/app/components/ui/Button";
 import DeleteConfirmDialog from "@/app/components/ui/DeleteConfirmDialog";
@@ -67,6 +67,7 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
   const canWriteReview = Boolean(
     user && (user.role === "ADMIN" || hasBookedRoom),
   );
+  const isAdmin = user?.role === "ADMIN";
 
   const comments = useMemo(() => {
     return sortCommentsNewestFirst(fetchedComments || initialComments);
@@ -89,18 +90,19 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
   } | null>(null);
   const showToast = useToastStore((state) => state.showToast);
   const {
+    control,
     formState: { errors, isSubmitting },
     handleSubmit,
     register,
     reset,
     setValue,
-    watch,
   } = useForm<CommentFormData>({
     resolver: zodResolver(commentSchema),
     defaultValues: { noiDung: "", saoBinhLuan: 5 },
   });
 
-  const selectedStars = watch("saoBinhLuan") || 5;
+  const selectedStars =
+    useWatch({ control, name: "saoBinhLuan" }) || 5;
 
   const averageRating = useMemo(() => {
     if (!comments.length) return 0;
@@ -191,6 +193,14 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
       return;
     }
 
+    if (editingId && !isAdmin) {
+      setMessage({
+        text: "Chỉ quản trị viên mới có thể chỉnh sửa đánh giá.",
+        type: "error",
+      });
+      return;
+    }
+
     const current = comments.find((comment) => comment.id === editingId);
     const payload = {
       id: editingId ?? 0,
@@ -234,6 +244,15 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
   //==== Xóa đánh giá: thực thi yêu cầu sau khi người dùng xác nhận ====
   const confirmRemove = async () => {
     if (!deletingCommentId) return;
+
+    if (!isAdmin) {
+      setDeletingCommentId(null);
+      setMessage({
+        text: "Chỉ quản trị viên mới có thể xóa đánh giá.",
+        type: "error",
+      });
+      return;
+    }
 
     try {
       await deleteMutation.mutateAsync(deletingCommentId);
@@ -442,8 +461,6 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
         >
           <div className="flex flex-col gap-4 w-full">
             {comments.slice(0, visibleCount).map((comment) => {
-              const canManage =
-                user?.id === comment.maNguoiBinhLuan || user?.role === "ADMIN";
               return (
                 <article
                   className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-slate-900/40 overflow-hidden min-w-0 shadow-sm"
@@ -474,7 +491,7 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
                     previewLength={110}
                     text={comment.noiDung}
                   />
-                  {canManage && (
+                  {isAdmin && (
                     <div className="mt-4 flex gap-2 border-t border-gray-100 pt-3 text-xs font-semibold">
                       <Button
                         className="px-3 py-2 text-xs"

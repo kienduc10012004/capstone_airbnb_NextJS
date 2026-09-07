@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 
-import { getImageSource } from "@/app/lib/image";
+import { getOptionalImageSource } from "@/app/lib/image";
 
 type UserMenuAvatarProps = {
   avatar?: string;
@@ -12,7 +12,7 @@ type UserMenuAvatarProps = {
 
 const UserMenuAvatar = ({ avatar, name }: UserMenuAvatarProps) => {
   const [imageFailed, setImageFailed] = useState(false);
-  const avatarSource = getImageSource(avatar);
+  const avatarSource = getOptionalImageSource(avatar);
 
   return (
     <span className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-gray-900 text-sm font-semibold text-white">

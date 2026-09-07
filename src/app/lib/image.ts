@@ -21,11 +21,10 @@ export const getImageValidationMessage = (file: File) => {
   return null;
 };
 
-export const getImageSource = (value?: string | null, fallbackIndex = 0) => {
+export const getOptionalImageSource = (value?: string | null) => {
   const source = value?.trim();
-  if (!source) {
-    return getCdnFallbackImage(fallbackIndex);
-  }
+  if (!source) return null;
+
   if (
     source.startsWith("http://") ||
     source.startsWith("https://") ||
@@ -35,9 +34,7 @@ export const getImageSource = (value?: string | null, fallbackIndex = 0) => {
   }
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "");
-  if (!apiUrl) {
-    return getCdnFallbackImage(fallbackIndex);
-  }
+  if (!apiUrl) return null;
 
   if (source.startsWith("/")) {
     return `${apiUrl}${source}`;
@@ -45,3 +42,6 @@ export const getImageSource = (value?: string | null, fallbackIndex = 0) => {
 
   return `${apiUrl}/images/${encodeURIComponent(source)}`;
 };
+
+export const getImageSource = (value?: string | null, fallbackIndex = 0) =>
+  getOptionalImageSource(value) ?? getCdnFallbackImage(fallbackIndex);
