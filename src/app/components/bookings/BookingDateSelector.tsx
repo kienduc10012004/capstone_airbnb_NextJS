@@ -328,7 +328,7 @@ const BookingDateSelector = ({
             />
           </span>
           <p className="mt-1 text-xs sm:text-sm font-bold text-gray-900 dark:text-white truncate">
-            {checkIn ? formatDisplayDate(checkIn) : "Chọn ngày"}
+            {checkIn ? formatDisplayDate(checkIn) : "Chọn ngày nhận phòng"}
           </p>
         </button>
 
@@ -352,7 +352,7 @@ const BookingDateSelector = ({
             />
           </span>
           <p className="mt-1 text-xs sm:text-sm font-bold text-gray-900 dark:text-white truncate">
-            {checkOut ? formatDisplayDate(checkOut) : "Chọn ngày"}
+            {checkOut ? formatDisplayDate(checkOut) : "Chọn ngày trả phòng"}
           </p>
         </button>
       </div>
@@ -383,7 +383,9 @@ const BookingDateSelector = ({
                     Nhận phòng
                   </span>
                   <span className="text-xs sm:text-sm font-bold truncate">
-                    {checkIn ? formatDisplayDate(checkIn) : "Chọn ngày"}
+                    {checkIn
+                      ? formatDisplayDate(checkIn)
+                      : "Chọn ngày nhận phòng"}
                   </span>
                 </button>
 
@@ -404,7 +406,9 @@ const BookingDateSelector = ({
                     Trả phòng
                   </span>
                   <span className="text-xs sm:text-sm font-bold truncate">
-                    {checkOut ? formatDisplayDate(checkOut) : "Chọn ngày"}
+                    {checkOut
+                      ? formatDisplayDate(checkOut)
+                      : "Chọn ngày trả phòng"}
                   </span>
                 </button>
               </div>

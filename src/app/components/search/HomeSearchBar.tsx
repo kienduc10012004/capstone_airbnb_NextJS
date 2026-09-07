@@ -71,12 +71,23 @@ const HomeSearchBar = ({
     [],
   );
 
+  const searchPanelKey = [
+    initialLocationId ?? "",
+    initialDates?.checkIn ?? "",
+    initialDates?.checkOut ?? "",
+    initialGuests?.adults ?? "",
+    initialGuests?.children ?? "",
+    initialGuests?.infants ?? "",
+    initialGuests?.pets ?? "",
+  ].join(":");
+
   const searchPanel = (
     <div className="mx-auto max-w-7xl w-full">
       <SearchPanel
         initialDates={initialDates}
         initialGuests={initialGuests}
         initialLocationId={initialLocationId}
+        key={searchPanelKey}
       />
     </div>
   );

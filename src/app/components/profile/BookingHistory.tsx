@@ -22,7 +22,10 @@ import {
   type ApiRoom,
 } from "@/app/lib/api";
 import { validateBookingBusinessRules } from "@/app/lib/booking-availability";
-import { formatDateForInput } from "@/app/lib/date";
+import {
+  formatDateForInput,
+  toBookingDateISOString,
+} from "@/app/lib/date";
 import { getImageSource } from "@/app/lib/image";
 import { bookingSchema } from "@/app/lib/schemas";
 import { uiClassNames } from "@/app/lib/styles";
@@ -43,8 +46,8 @@ const getTripStatusKey = (
   const checkInStr = (ngayDen || "").slice(0, 10);
   const checkOutStr = (ngayDi || "").slice(0, 10);
 
-  if (checkOutStr < todayStr) return "completed";
-  if (checkInStr <= todayStr && todayStr <= checkOutStr) return "in_progress";
+  if (checkOutStr <= todayStr) return "completed";
+  if (checkInStr <= todayStr && todayStr < checkOutStr) return "in_progress";
   return "upcoming";
 };
 
@@ -183,8 +186,8 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
 
       const response = await updateBooking(editing.id, {
         ...editing,
-        ngayDen: new Date(`${parsed.data.ngayDen}T00:00:00`).toISOString(),
-        ngayDi: new Date(`${parsed.data.ngayDi}T00:00:00`).toISOString(),
+        ngayDen: toBookingDateISOString(parsed.data.ngayDen),
+        ngayDi: toBookingDateISOString(parsed.data.ngayDi),
         soLuongKhach: parsed.data.soLuongKhach,
       });
 

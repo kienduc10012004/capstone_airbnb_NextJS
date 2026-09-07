@@ -7,10 +7,12 @@ import { createPortal } from "react-dom";
 import DateSelector from "@/app/components/search/DateSelector";
 import GuestSelector from "@/app/components/search/GuestSelector";
 import LocationSelector from "@/app/components/search/LocationSelector";
-import type {
-  DateRange,
-  GuestSelection,
-  SearchSection,
+import {
+  getStayGuestCount,
+  normalizeGuestSelection,
+  type DateRange,
+  type GuestSelection,
+  type SearchSection,
 } from "@/app/components/search/types";
 import Button from "@/app/components/ui/Button";
 import { getLocations, type ApiLocation } from "@/app/lib/api";
@@ -44,9 +46,12 @@ const SearchPanel = ({
 }: SearchPanelProps) => {
   const router = useRouter();
   const desktopRef = useRef<HTMLDivElement>(null);
+  const mobileRef = useRef<HTMLDivElement>(null);
   const [activeSection, setActiveSection] = useState<SearchSection>(null);
   const [dates, setDates] = useState<DateRange>(initialDates);
-  const [guests, setGuests] = useState<GuestSelection>(initialGuests);
+  const [guests, setGuests] = useState<GuestSelection>(() =>
+    normalizeGuestSelection(initialGuests),
+  );
   const [locationId, setLocationId] = useState<number | null>(
     initialLocationId,
   );
@@ -75,7 +80,14 @@ const SearchPanel = ({
 
   useEffect(() => {
     const closePopover = (event: MouseEvent) => {
-      if (!desktopRef.current?.contains(event.target as Node)) {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+
+      const clickedInsideSearch =
+        desktopRef.current?.contains(target) ||
+        mobileRef.current?.contains(target);
+
+      if (!clickedInsideSearch) {
         setActiveSection(null);
       }
     };
@@ -93,7 +105,7 @@ const SearchPanel = ({
   const selectedLocation = locations.find(
     (location) => location.id === locationId,
   );
-  const totalGuests = guests.adults + guests.children;
+  const totalGuests = getStayGuestCount(guests);
 
   //==== Thực thi tìm kiếm: kiểm tra ngày và chuyển bộ lọc hợp lệ sang trang danh sách phòng ====
   const closeMobileSearch = () => {
@@ -241,6 +253,7 @@ const SearchPanel = ({
           <div
             className={`${uiClassNames.mobileSheetMotion} fixed inset-0 z-[110] bg-gray-100 md:hidden`}
             data-mobile-search-sheet="true"
+            ref={mobileRef}
           >
             <div className="flex h-full flex-col">
               <div className="flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3">

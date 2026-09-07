@@ -1,8 +1,13 @@
 "use client";
 
-import type {
-  GuestSelection,
-  SearchSelectorVariant,
+import {
+  getStayGuestCount,
+  MAX_INFANTS,
+  MAX_PETS,
+  MAX_STAY_GUESTS,
+  normalizeGuestSelection,
+  type GuestSelection,
+  type SearchSelectorVariant,
 } from "@/app/components/search/types";
 import { uiClassNames } from "@/app/lib/styles";
 
@@ -15,6 +20,7 @@ type GuestSelectorProps = {
 };
 
 type GuestRowProps = {
+  decreaseDisabled?: boolean;
   description: string;
   increaseDisabled?: boolean;
   label: string;
@@ -24,6 +30,7 @@ type GuestRowProps = {
 };
 
 const GuestRow = ({
+  decreaseDisabled = false,
   description,
   increaseDisabled = false,
   label,
@@ -40,7 +47,7 @@ const GuestRow = ({
       <button
         aria-label={`Giảm ${label}`}
         className="grid h-8 w-8 place-items-center rounded-full border border-gray-300 text-lg text-gray-600 disabled:cursor-not-allowed disabled:opacity-30"
-        disabled={value === 0}
+        disabled={value === 0 || decreaseDisabled}
         type="button"
         onClick={onDecrease}
       >
@@ -67,7 +74,9 @@ const GuestSelector = ({
   value,
   variant,
 }: GuestSelectorProps) => {
-  const totalGuests = value.adults + value.children;
+  const totalGuests = getStayGuestCount(value);
+  const hasDependentGuests =
+    value.children > 0 || value.infants > 0 || value.pets > 0;
   const detailParts = [
     totalGuests ? `${totalGuests} khách` : "",
     value.infants ? `${value.infants} em bé` : "",
@@ -76,33 +85,29 @@ const GuestSelector = ({
   const valueLabel = detailParts.join(", ") || "Thêm khách";
 
   const update = (key: keyof GuestSelection, amount: number) => {
-    const totalGuests = value.adults + value.children;
     if (
-      amount > 0 &&
-      (key === "adults" || key === "children") &&
-      totalGuests >= 16
+      key === "adults" &&
+      amount < 0 &&
+      value.adults === 1 &&
+      hasDependentGuests
     ) {
       return;
     }
-    if (
-      amount > 0 &&
-      (key === "infants" || key === "pets") &&
-      value[key] >= 5
-    ) {
-      return;
-    }
-    const nextValue = { ...value, [key]: Math.max(0, value[key] + amount) };
-    if (key === "children" && amount > 0 && nextValue.adults === 0) {
+
+    const nextValue = { ...value, [key]: value[key] + amount };
+    if (amount > 0 && key !== "adults" && nextValue.adults === 0) {
       nextValue.adults = 1;
     }
-    onChange(nextValue);
+
+    onChange(normalizeGuestSelection(nextValue));
   };
 
   const content = (
     <div className="px-5 py-2 sm:px-6">
       <GuestRow
+        decreaseDisabled={value.adults === 1 && hasDependentGuests}
         description="Từ 13 tuổi trở lên"
-        increaseDisabled={totalGuests >= 16}
+        increaseDisabled={totalGuests >= MAX_STAY_GUESTS}
         label="Người lớn"
         value={value.adults}
         onDecrease={() => update("adults", -1)}
@@ -110,7 +115,7 @@ const GuestSelector = ({
       />
       <GuestRow
         description="Độ tuổi 2–12"
-        increaseDisabled={totalGuests >= 16}
+        increaseDisabled={totalGuests >= MAX_STAY_GUESTS}
         label="Trẻ em"
         value={value.children}
         onDecrease={() => update("children", -1)}
@@ -118,7 +123,7 @@ const GuestSelector = ({
       />
       <GuestRow
         description="Dưới 2 tuổi"
-        increaseDisabled={value.infants >= 5}
+        increaseDisabled={value.infants >= MAX_INFANTS}
         label="Em bé"
         value={value.infants}
         onDecrease={() => update("infants", -1)}
@@ -126,12 +131,16 @@ const GuestSelector = ({
       />
       <GuestRow
         description="Bạn sẽ mang theo động vật phục vụ?"
-        increaseDisabled={value.pets >= 5}
+        increaseDisabled={value.pets >= MAX_PETS}
         label="Thú cưng"
         value={value.pets}
         onDecrease={() => update("pets", -1)}
         onIncrease={() => update("pets", 1)}
       />
+      <p className="py-3 text-xs leading-5 text-gray-500 dark:text-slate-400">
+        Em bé và thú cưng không tính vào tổng số khách. Mỗi phòng được chọn tối
+        đa {MAX_INFANTS} em bé và {MAX_PETS} thú cưng.
+      </p>
     </div>
   );
 

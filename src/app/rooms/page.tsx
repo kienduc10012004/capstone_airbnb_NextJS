@@ -6,6 +6,10 @@ import Header from "@/app/components/Header";
 import RoomCard from "@/app/components/RoomCard";
 import HomeSearchBar from "@/app/components/search/HomeSearchBar";
 import { formatShortDate } from "@/app/components/search/date-utils";
+import {
+  getStayGuestCount,
+  normalizeGuestSelection,
+} from "@/app/components/search/types";
 import { buttonClassName } from "@/app/components/ui/Button";
 import EmptyState from "@/app/components/ui/EmptyState";
 import Pagination from "@/app/components/ui/Pagination";
@@ -120,16 +124,26 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
   const currentPage = Math.max(Number(query.page) || 1, 1);
   const keyword = query.keyword?.trim() ?? "";
   const locationId = Number(query.location) || 0;
-  const guestCount = Number(query.guests) || 0;
   const checkIn = query.checkIn ?? "";
   const checkOut = query.checkOut ?? "";
   const requestedRange = getStayDateRange(checkIn, checkOut);
-  const guests = {
-    adults: Number(query.adults) || 0,
-    children: Number(query.children) || 0,
-    infants: Number(query.infants) || 0,
-    pets: Number(query.pets) || 0,
-  };
+  const hasDetailedGuestParams = [
+    query.adults,
+    query.children,
+    query.infants,
+    query.pets,
+  ].some((value) => value !== undefined);
+  const guests = normalizeGuestSelection(
+    hasDetailedGuestParams
+      ? {
+          adults: query.adults,
+          children: query.children,
+          infants: query.infants,
+          pets: query.pets,
+        }
+      : { adults: query.guests },
+  );
+  const guestCount = getStayGuestCount(guests);
   const pageData = await loadPageData({
     currentPage,
     guestCount,
@@ -159,6 +173,13 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
     locations.map((location) => [location.id, location]),
   );
   const totalPages = Math.max(Math.ceil(totalRows / PAGE_SIZE), 1);
+  const appendGuestParams = (params: URLSearchParams) => {
+    if (guestCount) params.set("guests", String(guestCount));
+    if (guests.adults) params.set("adults", String(guests.adults));
+    if (guests.children) params.set("children", String(guests.children));
+    if (guests.infants) params.set("infants", String(guests.infants));
+    if (guests.pets) params.set("pets", String(guests.pets));
+  };
   const pageHref = (page: number) => {
     const params = new URLSearchParams();
     if (keyword) params.set("keyword", keyword);
@@ -167,11 +188,7 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
       params.set("checkIn", requestedRange.checkIn);
       params.set("checkOut", requestedRange.checkOut);
     }
-    if (guestCount) params.set("guests", String(guestCount));
-    if (guests.adults) params.set("adults", String(guests.adults));
-    if (guests.children) params.set("children", String(guests.children));
-    if (guests.infants) params.set("infants", String(guests.infants));
-    if (guests.pets) params.set("pets", String(guests.pets));
+    appendGuestParams(params);
     params.set("page", String(page));
     return `/rooms?${params.toString()}`;
   };
@@ -180,7 +197,7 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
     detailParams.set("checkIn", requestedRange.checkIn);
     detailParams.set("checkOut", requestedRange.checkOut);
   }
-  if (guestCount) detailParams.set("guests", String(guestCount));
+  appendGuestParams(detailParams);
   const selectedLocation = locationMap.get(locationId);
   const hasGuestSelection = Boolean(
     guestCount || guests.infants || guests.pets,
@@ -201,11 +218,7 @@ export default async function RoomsPage({ searchParams }: RoomsPageProps) {
       params.set("checkOut", requestedRange.checkOut);
     }
     if (excludedGroup !== "guests") {
-      if (guestCount) params.set("guests", String(guestCount));
-      if (guests.adults) params.set("adults", String(guests.adults));
-      if (guests.children) params.set("children", String(guests.children));
-      if (guests.infants) params.set("infants", String(guests.infants));
-      if (guests.pets) params.set("pets", String(guests.pets));
+      appendGuestParams(params);
     }
     return `/rooms${params.size ? `?${params.toString()}` : ""}`;
   };

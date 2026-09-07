@@ -16,8 +16,14 @@ import {
 } from "@/app/lib/api";
 import type { ApiBooking } from "@/app/lib/api/bookings";
 import { OPEN_SIGN_IN_EVENT } from "@/app/lib/auth-events";
-import { validateBookingBusinessRules } from "@/app/lib/booking-availability";
-import { formatDateForInput } from "@/app/lib/date";
+import {
+  getStayDateRange,
+  validateBookingBusinessRules,
+} from "@/app/lib/booking-availability";
+import {
+  formatDateForInput,
+  toBookingDateISOString,
+} from "@/app/lib/date";
 import { bookingSchema, type BookingFormData } from "@/app/lib/schemas";
 import { uiClassNames } from "@/app/lib/styles";
 import { useAuthStore } from "@/app/store/useAuthStore";
@@ -35,17 +41,17 @@ type BookingCardProps = {
 };
 
 const getDefaultDates = (checkIn?: string, checkOut?: string) => {
-  if (checkIn && checkOut) {
-    return { ngayDen: checkIn, ngayDi: checkOut };
+  const initialRange = getStayDateRange(checkIn ?? "", checkOut ?? "");
+  const today = formatDateForInput(new Date());
+
+  if (initialRange && initialRange.checkIn >= today) {
+    return {
+      ngayDen: initialRange.checkIn,
+      ngayDi: initialRange.checkOut,
+    };
   }
-  const arrival = new Date();
-  arrival.setDate(arrival.getDate() + 1);
-  const departure = new Date(arrival);
-  departure.setDate(departure.getDate() + 1);
-  return {
-    ngayDen: formatDateForInput(arrival),
-    ngayDi: formatDateForInput(departure),
-  };
+
+  return { ngayDen: "", ngayDi: "" };
 };
 
 const BookingCard = ({
@@ -99,6 +105,7 @@ const BookingCard = ({
     formState: { errors },
     handleSubmit,
     register,
+    reset,
     setValue,
   } = useForm<BookingFormData>({
     resolver: zodResolver(bookingSchema),
@@ -114,13 +121,14 @@ const BookingCard = ({
   });
 
   const billableGuests = Math.max(Number(selectedGuests) || 1, 1);
-  const nights = Math.max(
-    Math.ceil(
-      (new Date(departure).getTime() - new Date(arrival).getTime()) /
-      86_400_000,
-    ) || 0,
-    1,
-  );
+  const selectedRange = getStayDateRange(arrival, departure);
+  const nights = selectedRange
+    ? Math.ceil(
+        (new Date(`${selectedRange.checkOut}T00:00:00Z`).getTime() -
+          new Date(`${selectedRange.checkIn}T00:00:00Z`).getTime()) /
+          86_400_000,
+      )
+    : 0;
 
   const staySubtotal = price * nights;
   const serviceFee = Math.round(staySubtotal * 0.12);
@@ -211,22 +219,21 @@ const BookingCard = ({
         return;
       }
 
-      const startIso = new Date(
-        `${pendingFormData.ngayDen}T00:00:00`,
-      ).toISOString();
-      const endIso = new Date(
-        `${pendingFormData.ngayDi}T00:00:00`,
-      ).toISOString();
-
-      await createBooking({
+      const response = await createBooking({
         id: 0,
         maNguoiDung: user.id,
         maPhong: roomId,
-        ngayDen: startIso,
-        ngayDi: endIso,
+        ngayDen: toBookingDateISOString(pendingFormData.ngayDen),
+        ngayDi: toBookingDateISOString(pendingFormData.ngayDi),
         soLuongKhach: pendingFormData.soLuongKhach,
       });
 
+      setExistingBookings((current) => [...current, response.content]);
+      reset({
+        ngayDen: "",
+        ngayDi: "",
+        soLuongKhach: pendingFormData.soLuongKhach,
+      });
       setPendingFormData(null);
       setMessage(null);
       showToast("Đặt phòng thành công!", "success");

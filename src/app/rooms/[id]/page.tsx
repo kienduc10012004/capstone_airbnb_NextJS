@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 
 import BookingCard from "@/app/components/bookings/BookingCard";
 import CommentsSection from "@/app/components/comments/CommentsSection";
+import {
+  getStayGuestCount,
+  normalizeGuestSelection,
+} from "@/app/components/search/types";
 import Footer from "@/app/components/Footer";
 import Header from "@/app/components/Header";
 import RoomCard from "@/app/components/RoomCard";
@@ -32,6 +36,10 @@ type RoomDetailPageProps = {
     checkIn?: string;
     checkOut?: string;
     guests?: string;
+    adults?: string;
+    children?: string;
+    infants?: string;
+    pets?: string;
   }>;
 };
 
@@ -67,6 +75,23 @@ export default async function RoomDetailPage({
   const { id } = await params;
   const query = await searchParams;
   const roomId = Number(id);
+  const hasDetailedGuestParams = [
+    query.adults,
+    query.children,
+    query.infants,
+    query.pets,
+  ].some((value) => value !== undefined);
+  const guests = normalizeGuestSelection(
+    hasDetailedGuestParams
+      ? {
+          adults: query.adults,
+          children: query.children,
+          infants: query.infants,
+          pets: query.pets,
+        }
+      : { adults: query.guests },
+  );
+  const stayGuestCount = getStayGuestCount(guests);
 
   if (!Number.isInteger(roomId) || roomId <= 0) {
     notFound();
@@ -239,7 +264,7 @@ export default async function RoomDetailPage({
           <BookingCard
             initialCheckIn={query.checkIn}
             initialCheckOut={query.checkOut}
-            initialGuests={Number(query.guests) || 1}
+            initialGuests={stayGuestCount || 1}
             maxGuests={room.khach}
             price={room.giaTien}
             rating={rating}

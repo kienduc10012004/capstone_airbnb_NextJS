@@ -23,7 +23,10 @@ import {
   type ApiRoom,
   type ApiUser,
 } from "@/app/lib/api";
-import { formatDateForInput } from "@/app/lib/date";
+import {
+  formatDateForInput,
+  toBookingDateISOString,
+} from "@/app/lib/date";
 import { validateBookingBusinessRules } from "@/app/lib/booking-availability";
 import { bookingSchema } from "@/app/lib/schemas";
 import { uiClassNames } from "@/app/lib/styles";
@@ -151,8 +154,8 @@ export default function AdminBookingsPage() {
         id: editing.id,
         maNguoiDung: editing.maNguoiDung,
         maPhong: targetRoomId,
-        ngayDen: new Date(parsed.data.ngayDen).toISOString(),
-        ngayDi: new Date(parsed.data.ngayDi).toISOString(),
+        ngayDen: toBookingDateISOString(parsed.data.ngayDen),
+        ngayDi: toBookingDateISOString(parsed.data.ngayDi),
         soLuongKhach: parsed.data.soLuongKhach,
       });
       await loadBookings();

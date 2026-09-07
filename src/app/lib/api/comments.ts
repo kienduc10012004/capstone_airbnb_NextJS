@@ -19,6 +19,36 @@ export type CommentPayload = Omit<
   id?: number;
 };
 
+type ApiRoomComment = Omit<ApiComment, "maPhong" | "maNguoiBinhLuan"> & {
+  maPhong: number | null;
+  maNguoiBinhLuan: number | null;
+};
+
+const toPositiveInteger = (value: unknown) => {
+  const numericValue = Number(value);
+  return Number.isInteger(numericValue) && numericValue > 0 ? numericValue : 0;
+};
+
+const normalizeRoomComments = (
+  comments: ApiRoomComment[],
+  roomId: number,
+  fullCommentById = new Map<number, ApiComment>(),
+): ApiComment[] =>
+  comments.map((comment) => {
+    const fullComment = fullCommentById.get(comment.id);
+
+    return {
+      ...comment,
+      maPhong:
+        toPositiveInteger(comment.maPhong) ||
+        toPositiveInteger(fullComment?.maPhong) ||
+        roomId,
+      maNguoiBinhLuan:
+        toPositiveInteger(comment.maNguoiBinhLuan) ||
+        toPositiveInteger(fullComment?.maNguoiBinhLuan),
+    };
+  });
+
 export const getComments = async () => {
   const { data } =
     await axiosClient.get<ApiEnvelope<ApiComment[]>>("/binh-luan");
@@ -26,10 +56,41 @@ export const getComments = async () => {
 };
 
 export const getCommentsByRoom = async (roomId: number) => {
-  const { data } = await axiosClient.get<ApiEnvelope<ApiComment[]>>(
-    `/binh-luan/lay-binh-luan-theo-phong/${roomId}`,
+  const numericRoomId = Number(roomId);
+  const { data } = await axiosClient.get<ApiEnvelope<ApiRoomComment[]>>(
+    `/binh-luan/lay-binh-luan-theo-phong/${numericRoomId}`,
   );
-  return data;
+
+  const hasMissingOwner = data.content.some(
+    (comment) => !toPositiveInteger(comment.maNguoiBinhLuan),
+  );
+  if (!hasMissingOwner) {
+    return {
+      ...data,
+      content: normalizeRoomComments(data.content, numericRoomId),
+    };
+  }
+
+  try {
+    const allCommentsResponse = await getComments();
+    const fullCommentById = new Map(
+      allCommentsResponse.content.map((comment) => [comment.id, comment]),
+    );
+
+    return {
+      ...data,
+      content: normalizeRoomComments(
+        data.content,
+        numericRoomId,
+        fullCommentById,
+      ),
+    };
+  } catch {
+    return {
+      ...data,
+      content: normalizeRoomComments(data.content, numericRoomId),
+    };
+  }
 };
 
 export const createComment = async (payload: CommentPayload) => {
