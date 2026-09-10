@@ -39,6 +39,7 @@ const normalizeRoomComments = (
 
     return {
       ...comment,
+      avatar: comment.avatar || fullComment?.avatar,
       maPhong:
         toPositiveInteger(comment.maPhong) ||
         toPositiveInteger(fullComment?.maPhong) ||
@@ -46,6 +47,8 @@ const normalizeRoomComments = (
       maNguoiBinhLuan:
         toPositiveInteger(comment.maNguoiBinhLuan) ||
         toPositiveInteger(fullComment?.maNguoiBinhLuan),
+      tenNguoiBinhLuan:
+        comment.tenNguoiBinhLuan || fullComment?.tenNguoiBinhLuan,
     };
   });
 

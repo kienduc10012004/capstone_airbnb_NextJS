@@ -25,11 +25,11 @@ export const getOptionalImageSource = (value?: string | null) => {
   const source = value?.trim();
   if (!source) return null;
 
-  if (
-    source.startsWith("http://") ||
-    source.startsWith("https://") ||
-    source.startsWith("data:")
-  ) {
+  if (source.startsWith("http://")) {
+    return source.replace(/^http:\/\//, "https://");
+  }
+
+  if (source.startsWith("https://") || source.startsWith("data:")) {
     return source;
   }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
@@ -13,6 +14,7 @@ import {
   getApiErrorMessage,
   type ApiComment,
 } from "@/app/lib/api";
+import { getOptionalImageSource } from "@/app/lib/image";
 import { commentSchema, type CommentFormData } from "@/app/lib/schemas";
 import { uiClassNames } from "@/app/lib/styles";
 import { useAuthStore } from "@/app/store/useAuthStore";
@@ -45,6 +47,36 @@ const Stars = ({ value }: { value: number }) => (
     <span className="text-gray-200">{"★".repeat(5 - value)}</span>
   </span>
 );
+
+const CommentAvatar = ({
+  avatar,
+  name,
+}: {
+  avatar?: string;
+  name: string;
+}) => {
+  const avatarSource = getOptionalImageSource(avatar);
+  const [failedImageSource, setFailedImageSource] = useState<string | null>(
+    null,
+  );
+
+  return (
+    <div className="relative grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-rose-100 font-semibold text-rose-600 dark:bg-rose-950/60 dark:text-rose-400">
+      {avatarSource && failedImageSource !== avatarSource ? (
+        <Image
+          fill
+          alt={`Ảnh đại diện của ${name}`}
+          className="object-cover"
+          sizes="40px"
+          src={avatarSource}
+          onError={() => setFailedImageSource(avatarSource)}
+        />
+      ) : (
+        name.charAt(0).toUpperCase()
+      )}
+    </div>
+  );
+};
 
 type CommentsSectionProps = {
   initialComments: ApiComment[];
@@ -461,6 +493,9 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
         >
           <div className="flex flex-col gap-4 w-full">
             {comments.slice(0, visibleCount).map((comment) => {
+              const commenterName =
+                comment.tenNguoiBinhLuan || "Khách hàng Airbnb";
+
               return (
                 <article
                   className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-slate-900/40 overflow-hidden min-w-0 shadow-sm"
@@ -468,14 +503,13 @@ const CommentsSection = ({ initialComments, roomId }: CommentsSectionProps) => {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-rose-100 dark:bg-rose-950/60 font-semibold text-rose-600 dark:text-rose-400">
-                        {(comment.tenNguoiBinhLuan || "K")
-                          .charAt(0)
-                          .toUpperCase()}
-                      </div>
+                      <CommentAvatar
+                        avatar={comment.avatar}
+                        name={commenterName}
+                      />
                       <div>
                         <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                          {comment.tenNguoiBinhLuan || "Khách hàng Airbnb"}
+                          {commenterName}
                         </h3>
                         <p className="text-xs text-gray-500 dark:text-slate-400">
                           {new Date(comment.ngayBinhLuan).toLocaleDateString(
