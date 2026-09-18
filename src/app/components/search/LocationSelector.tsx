@@ -30,15 +30,11 @@ const LocationSelector = ({
 }: LocationSelectorProps) => {
   const [keyword, setKeyword] = useState("");
   const [debouncedKeyword, setDebouncedKeyword] = useState("");
-  const [isDebouncing, setIsDebouncing] = useState(false);
+  const isDebouncing = keyword !== debouncedKeyword;
 
   useEffect(() => {
-    if (keyword !== debouncedKeyword) {
-      setIsDebouncing(true);
-    }
     const timer = setTimeout(() => {
       setDebouncedKeyword(keyword);
-      setIsDebouncing(false);
     }, 2000);
 
     return () => clearTimeout(timer);
@@ -98,7 +94,6 @@ const LocationSelector = ({
             onClick={() => {
               setKeyword("");
               setDebouncedKeyword("");
-              setIsDebouncing(false);
             }}
           >
             ×

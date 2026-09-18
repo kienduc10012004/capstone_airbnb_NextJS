@@ -34,13 +34,17 @@ const ConfirmDialog = ({
   const [secondsLeft, setSecondsLeft] = useState(countdownSeconds);
 
   useEffect(() => {
-    if (!open) {
+    const frameId = window.requestAnimationFrame(() => {
       setSecondsLeft(countdownSeconds);
-      return;
+    });
+
+    if (!open) {
+      return () => window.cancelAnimationFrame(frameId);
     }
 
-    setSecondsLeft(countdownSeconds);
-    if (countdownSeconds <= 0) return;
+    if (countdownSeconds <= 0) {
+      return () => window.cancelAnimationFrame(frameId);
+    }
 
     const intervalId = window.setInterval(() => {
       setSecondsLeft((prev) => {
@@ -52,7 +56,10 @@ const ConfirmDialog = ({
       });
     }, 1000);
 
-    return () => window.clearInterval(intervalId);
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearInterval(intervalId);
+    };
   }, [open, countdownSeconds]);
 
   useEffect(() => {

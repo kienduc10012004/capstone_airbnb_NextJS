@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { getImageSource, getImageValidationMessage } from "@/app/lib/image";
 import { uiClassNames } from "@/app/lib/styles";
@@ -20,17 +20,7 @@ const DualImagePicker = ({
   onError,
 }: DualImagePickerProps) => {
   const [mode, setMode] = useState<"file" | "url">("file");
-  const [urlInput, setUrlInput] = useState<string>(() =>
-    previewUrl && !previewUrl.startsWith("blob:") ? previewUrl : "",
-  );
-
-  useEffect(() => {
-    if (previewUrl && !previewUrl.startsWith("blob:")) {
-      setUrlInput(previewUrl);
-    } else if (!previewUrl) {
-      setUrlInput("");
-    }
-  }, [previewUrl]);
+  const urlInput = previewUrl.startsWith("blob:") ? "" : previewUrl;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,12 +38,10 @@ const DualImagePicker = ({
 
   const handleUrlInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value ?? "";
-    setUrlInput(val);
     onUrlChange(val);
   };
 
   const handleClear = () => {
-    setUrlInput("");
     onFileSelect(null, "");
     onUrlChange("");
   };

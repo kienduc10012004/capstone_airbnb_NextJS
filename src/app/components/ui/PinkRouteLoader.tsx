@@ -11,7 +11,8 @@ const PinkRouteLoader = () => {
   useEffect(() => {
     // Khi pathname hoặc searchParams thay đổi -> cuộn lên đầu trang và kết thúc loading
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    setLoading(false);
+    const frameId = window.requestAnimationFrame(() => setLoading(false));
+    return () => window.cancelAnimationFrame(frameId);
   }, [pathname, searchParams]);
 
   useEffect(() => {

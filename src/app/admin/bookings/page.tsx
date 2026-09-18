@@ -63,9 +63,12 @@ export default function AdminBookingsPage() {
         setRooms(roomsResponse.content);
         setUsers(usersResponse.content);
       })
-      .catch(() => {
+      .catch((error) => {
         if (active) {
-          showToast("Không thể tải dữ liệu đặt phòng.", "error");
+          showToast(
+            getApiErrorMessage(error, "Không thể tải dữ liệu đặt phòng."),
+            "error",
+          );
         }
       })
       .finally(() => {

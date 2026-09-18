@@ -122,9 +122,12 @@ export default function AdminRoomsPage() {
         setTotalRows(roomsResponse.content.totalRow);
         setLocations(locationsResponse.content);
       })
-      .catch(() => {
+      .catch((error) => {
         if (active && requestId === latestRequestId.current) {
-          showToast("Không thể tải dữ liệu phòng.", "error");
+          showToast(
+            getApiErrorMessage(error, "Không thể tải dữ liệu phòng."),
+            "error",
+          );
         }
       })
       .finally(() => {

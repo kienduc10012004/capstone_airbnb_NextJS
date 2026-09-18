@@ -120,9 +120,12 @@ export default function AdminLocationsPage() {
         setLocations(response.content.data);
         setTotalRows(response.content.totalRow);
       })
-      .catch(() => {
+      .catch((error) => {
         if (active && requestId === latestRequestId.current) {
-          showToast("Không thể tải danh sách vị trí.", "error");
+          showToast(
+            getApiErrorMessage(error, "Không thể tải danh sách vị trí."),
+            "error",
+          );
         }
       })
       .finally(() => {

@@ -16,18 +16,11 @@ const AdminSearchBar = ({
   className = "",
 }: AdminSearchBarProps) => {
   const [internalValue, setInternalValue] = useState(value);
-  const [isDebouncing, setIsDebouncing] = useState(false);
-
-  useEffect(() => {
-    setInternalValue(value);
-  }, [value]);
+  const isDebouncing = internalValue !== value;
 
   useEffect(() => {
     if (internalValue === value) return;
-    setIsDebouncing(true);
-
     const timer = setTimeout(() => {
-      setIsDebouncing(false);
       onChange(internalValue);
     }, 2000);
 
@@ -36,7 +29,6 @@ const AdminSearchBar = ({
 
   const handleClear = () => {
     setInternalValue("");
-    setIsDebouncing(false);
     onChange("");
   };
 

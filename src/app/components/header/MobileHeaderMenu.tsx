@@ -14,7 +14,6 @@ type NavigationItem = {
 };
 
 type MobileHeaderMenuProps = {
-  accountMenuOpen: boolean;
   menuOpen: boolean;
   navigationItems: readonly NavigationItem[];
   pathname: string;
@@ -22,14 +21,12 @@ type MobileHeaderMenuProps = {
   onClose: () => void;
   onLogout: () => void;
   onOpenAuth: (mode: AuthMode) => void;
-  onToggleAccountMenu: () => void;
 };
 
 const isNavigationItemActive = (pathname: string, href: string) =>
   href === "/" ? pathname === href : pathname.startsWith(href);
 
 const MobileHeaderMenu = ({
-  accountMenuOpen: _accountMenuOpen,
   menuOpen,
   navigationItems,
   pathname,
@@ -37,7 +34,6 @@ const MobileHeaderMenu = ({
   onClose,
   onLogout,
   onOpenAuth,
-  onToggleAccountMenu: _onToggleAccountMenu,
 }: MobileHeaderMenuProps) => {
   if (!menuOpen) return null;
 

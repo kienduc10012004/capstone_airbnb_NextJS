@@ -43,7 +43,7 @@ const Header = () => {
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [mobileAccountMenuOpen, setMobileAccountMenuOpen] = useState(false);
+  const [, setMobileAccountMenuOpen] = useState(false);
   const hydrated = useAuthStore((state) => state.hydrated);
   const user = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
@@ -437,7 +437,6 @@ const Header = () => {
         </div>
       </header>
       <MobileHeaderMenu
-        accountMenuOpen={mobileAccountMenuOpen}
         menuOpen={mobileMenuOpen}
         navigationItems={visibleNavItems}
         pathname={pathname}
@@ -445,9 +444,6 @@ const Header = () => {
         onClose={closeMobileMenu}
         onLogout={requestLogout}
         onOpenAuth={openAuth}
-        onToggleAccountMenu={() =>
-          setMobileAccountMenuOpen((current) => !current)
-        }
       />
       <AuthModal
         initialSignInEmail={initialSignInEmail}

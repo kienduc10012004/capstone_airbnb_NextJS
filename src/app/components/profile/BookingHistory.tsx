@@ -88,10 +88,13 @@ const BookingHistory = ({ userId }: BookingHistoryProps) => {
         setBookings(bookingsResponse.content);
         setRooms(roomsResponse.content);
       })
-      .catch(() => {
+      .catch((error) => {
         if (active) {
           setMessage({
-            text: "Không thể tải lịch sử đặt phòng.",
+            text: getApiErrorMessage(
+              error,
+              "Không thể tải lịch sử đặt phòng.",
+            ),
             type: "error",
           });
         }

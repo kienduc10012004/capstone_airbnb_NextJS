@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone CommonJS connectivity diagnostic, not application source.
+    "test/check-api-connection.js",
   ]),
 ]);
 

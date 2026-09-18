@@ -11,14 +11,11 @@ const LocationSearchBar = ({ initialKeyword = "" }: LocationSearchBarProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [keyword, setKeyword] = useState(initialKeyword);
-  const [isDebouncing, setIsDebouncing] = useState(false);
+  const isDebouncing = keyword !== initialKeyword;
 
   useEffect(() => {
     if (keyword === initialKeyword) return;
-    setIsDebouncing(true);
-
     const timer = setTimeout(() => {
-      setIsDebouncing(false);
       const params = new URLSearchParams(searchParams.toString());
       if (keyword.trim()) {
         params.set("keyword", keyword.trim());
@@ -34,7 +31,6 @@ const LocationSearchBar = ({ initialKeyword = "" }: LocationSearchBarProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsDebouncing(false);
     const params = new URLSearchParams(searchParams.toString());
     if (keyword.trim()) {
       params.set("keyword", keyword.trim());

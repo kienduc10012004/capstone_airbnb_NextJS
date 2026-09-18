@@ -145,9 +145,12 @@ export default function AdminUsersPage() {
         setUsers(detailedUsers);
         setTotalRows(response.content.totalRow);
       })
-      .catch(() => {
+      .catch((error) => {
         if (active && requestId === latestRequestId.current) {
-          showToast("Không thể tải danh sách người dùng.", "error");
+          showToast(
+            getApiErrorMessage(error, "Không thể tải danh sách người dùng."),
+            "error",
+          );
         }
       })
       .finally(() => {

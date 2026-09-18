@@ -8,6 +8,7 @@ import LoadingState from "@/app/components/ui/LoadingState";
 import StatusMessage from "@/app/components/ui/StatusMessage";
 import {
   getAllRooms,
+  getApiErrorMessage,
   getBookings,
   getComments,
   getLocations,
@@ -95,8 +96,15 @@ export default function AdminDashboard() {
           users: users.content.length,
         });
       })
-      .catch(() => {
-        if (active) setError("Không thể tải toàn bộ số liệu tổng quan.");
+      .catch((err) => {
+        if (active) {
+          setError(
+            getApiErrorMessage(
+              err,
+              "Không thể tải toàn bộ số liệu tổng quan.",
+            ),
+          );
+        }
       });
     return () => {
       active = false;
